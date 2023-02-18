@@ -7,12 +7,11 @@ import java.util.Objects;
 public class ArrayStorage {
     Resume[] storage = new Resume[10000];
 
-    {
-        Arrays.fill(storage, null);
-    }
+    private int size;
 
     void clear() {
-        Arrays.fill(storage, null);
+        Arrays.fill(storage, 0, size, null);
+        size = 0;
     }
 
     void save(Resume r) {
@@ -22,14 +21,13 @@ public class ArrayStorage {
             }
             if (storage[i] == null) {
                 storage[i] = r;
+                size++;
                 break;
             }
         }
-
     }
 
     Resume get(String uuid) {
-        getAll();
         for (Resume resume : storage) {
             if (resume != null && Objects.equals(resume.uuid, uuid)) {
                 return resume;
@@ -39,11 +37,12 @@ public class ArrayStorage {
     }
 
     void delete(String uuid) {
-        int mark =-1;
+        int mark = -1;
         for (int i = 0; i < storage.length - 1; i++) {
             if (storage[i] != null && Objects.equals(storage[i].uuid, uuid)) {
                 storage[i] = null;
                 mark = i;
+                size--;
             }
             if (mark != -1) {
                 storage[i] = storage[i + 1];
@@ -58,16 +57,10 @@ public class ArrayStorage {
      * @return array, contains only Resumes in storage (without null)
      */
     Resume[] getAll() {
-        return storage;
+        return Arrays.copyOf(storage, size);
     }
 
     int size() {
-        int counter = 0;
-        for (Resume resume : storage) {
-            if (resume != null) {
-                counter++;
-            }
-        }
-        return counter;
+        return size;
     }
 }

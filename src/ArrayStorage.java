@@ -6,7 +6,6 @@ import java.util.Objects;
  */
 public class ArrayStorage {
     Resume[] storage = new Resume[10000];
-
     private int size;
 
     void clear() {
@@ -15,39 +14,40 @@ public class ArrayStorage {
     }
 
     void save(Resume r) {
-        for (int i = 0; i < storage.length; i++) {
-            if (storage[i] != null && storage[i] == r) {
+        int counter = 0;
+        do {
+            if (storage[counter] == r) {
                 break;
-            }
-            if (storage[i] == null) {
-                storage[i] = r;
+            } else if (counter == size) {
+                storage[counter] = r;
                 size++;
                 break;
             }
-        }
+            counter++;
+        } while (true);
     }
 
     Resume get(String uuid) {
-        for (Resume resume : storage) {
-            if (resume != null && Objects.equals(resume.uuid, uuid)) {
-                return resume;
+        for (int i = 0; i < size; i++) {
+            if (Objects.equals(storage[i].uuid, uuid)) {
+                return storage[i];
             }
         }
         return null;
     }
 
     void delete(String uuid) {
-        int mark = -1;
-        for (int i = 0; i < storage.length - 1; i++) {
-            if (storage[i] != null && Objects.equals(storage[i].uuid, uuid)) {
+        int indexForDelete = -1;
+        for (int i = 0; i < size; i++) {
+            if (Objects.equals(storage[i].uuid, uuid)) {
                 storage[i] = null;
-                mark = i;
+                indexForDelete = i;
                 size--;
             }
-            if (mark != -1) {
+            if (indexForDelete != -1) {
                 storage[i] = storage[i + 1];
             }
-            if (i == storage.length - 2) {
+            if (i == size - 1) {
                 storage[i + 1] = null;
             }
         }

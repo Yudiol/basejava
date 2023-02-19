@@ -14,7 +14,7 @@ public class ArrayStorage {
     }
 
     void save(Resume r) {
-        for (int i = 0; i < size + 1; i++) {
+        for (int i = 0; true; i++) {
             if (i < size && Objects.equals(storage[i].uuid, r.uuid)) {
                 break;
             } else if (i== size) {

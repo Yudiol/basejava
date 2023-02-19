@@ -15,7 +15,7 @@ public class ArrayStorage {
 
     void save(Resume r) {
         int counter = 0;
-        do {
+        for (int i = 0; i < size + 1; i++) {
             if (counter < size && Objects.equals(storage[counter].uuid, r.uuid)) {
                 break;
             } else if (counter == size) {
@@ -24,7 +24,7 @@ public class ArrayStorage {
                 break;
             }
             counter++;
-        } while (true);
+        }
     }
 
     Resume get(String uuid) {
@@ -38,7 +38,11 @@ public class ArrayStorage {
 
     void delete(String uuid) {
         for (int i = 0; i < size; i++) {
-            if (Objects.equals(storage[i].uuid, uuid)) storage[i] = storage[--size];
+            if (Objects.equals(storage[i].uuid, uuid)) {
+                storage[i] = storage[--size];
+                storage[size] = null;
+                break;
+            }
         }
     }
 

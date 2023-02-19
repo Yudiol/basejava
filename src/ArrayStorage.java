@@ -14,16 +14,14 @@ public class ArrayStorage {
     }
 
     void save(Resume r) {
-        int counter = 0;
         for (int i = 0; i < size + 1; i++) {
-            if (counter < size && Objects.equals(storage[counter].uuid, r.uuid)) {
+            if (i < size && Objects.equals(storage[i].uuid, r.uuid)) {
                 break;
-            } else if (counter == size) {
-                storage[counter] = r;
+            } else if (i== size) {
+                storage[i] = r;
                 size++;
                 break;
             }
-            counter++;
         }
     }
 

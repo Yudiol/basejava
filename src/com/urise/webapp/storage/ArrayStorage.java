@@ -1,78 +1,58 @@
-package com.urise.webapp.storage;
+package ru.javawebinar.basejava.storage;
 
-import com.urise.webapp.model.Resume;
+import com.urise.webapp.storage.AbstractArrayStorage;
+import ru.javawebinar.basejava.model.Resume;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Array based storage for Resumes
  */
-public class ArrayStorage {
-    private final int STORAGE_LIMIT = 10000;
-    private final Resume[] STORAGE = new Resume[STORAGE_LIMIT];
-    private int size;
+public class ArrayStorage extends AbstractArrayStorage {
 
     public void clear() {
-        Arrays.fill(STORAGE, 0, size, null);
+        Arrays.fill(storage, 0, size, null);
         size = 0;
-    }
-
-    public void save(Resume r) {
-        if (getIndex(r.getUuid()) > -1) {
-            System.out.println("Error method save : this resume " + '"' + r.getUuid() + '"' + " exist into storage already.");
-        } else if (size >= STORAGE.length) {
-            System.out.println("Error method save : the storage is filled. Resume is " + '"' + r.getUuid() + '"');
-        } else {
-            STORAGE[size++] = r;
-        }
     }
 
     public void update(Resume r) {
         int index = getIndex(r.getUuid());
-        if (index > -1) {
-            STORAGE[index] = r;
+        if (index == -1) {
+            System.out.println("Resume " + r.getUuid() + " not exist");
         } else {
-            System.out.println("Error method update : method can't find resume " + '"' + r.getUuid() + '"' + " into storage.");
+            storage[index] = r;
         }
     }
 
-    public Resume get(String uuid) {
-        int index = getIndex(uuid);
-        if (index > -1) {
-            return STORAGE[index];
+    public void save(Resume r) {
+        if (getIndex(r.getUuid()) != -1) {
+            System.out.println("Resume " + r.getUuid() + " already exist");
+        } else if (size >= STORAGE_LIMIT) {
+            System.out.println("Storage overflow");
         } else {
-            System.out.println("Error method get : method can't find resume " + '"' + uuid + '"' + " into storage.");
-            return null;
+            storage[size] = r;
+            size++;
         }
     }
 
     public void delete(String uuid) {
         int index = getIndex(uuid);
-        if (index > -1) {
-            STORAGE[index] = STORAGE[--size];
-            STORAGE[size] = null;
+        if (index == -1) {
+            System.out.println("Resume " + uuid + " not exist");
         } else {
-            System.out.println("Error method delete : method can't delete resume " + '"' + uuid + '"' + " because it didn't find it.");
+            storage[index] = storage[size - 1];
+            storage[size - 1] = null;
+            size--;
         }
     }
 
-    /**
-     * @return array, contains only Resumes in storage (without null)
-     */
     public Resume[] getAll() {
-        return Arrays.copyOf(STORAGE, size);
+        return Arrays.copyOfRange(storage, 0, size);
     }
 
-    public int size() {
-        return size;
-    }
-
-    private int getIndex(String uuid) {
-        for (int i = 0; true; i++) {
-            if (i == size) {
-                break;
-            } else if (Objects.equals(STORAGE[i].getUuid(), uuid)) {
+    protected int getIndex(String uuid) {
+        for (int i = 0; i < size; i++) {
+            if (uuid.equals(storage[i].getUuid())) {
                 return i;
             }
         }

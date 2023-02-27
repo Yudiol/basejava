@@ -1,4 +1,4 @@
-package ru.javawebinar.basejava.model;
+package com.urise.webapp.model;
 
 /**
  * ru.javawebinar.basejava.model.Resume class

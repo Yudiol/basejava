@@ -7,33 +7,15 @@ import com.urise.webapp.model.Resume;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-@RunWith(value = Parameterized.class)
-public class AbstractArrayStorageTest {
-    AbstractArrayStorage storage;
-    Resume r1 = new Resume();
-    Resume r2 = new Resume();
-    Resume r3 = new Resume();
-    Resume r4 = new Resume();
-    Resume r5 = new Resume();
-    Resume r6 = new Resume();
-
-    public AbstractArrayStorageTest(
-
-            AbstractArrayStorage storage) {
-        this.storage = storage;
-    }
-
-    @Parameterized.Parameters
-    public static Object[][] resumes() {
-        return new Object[][]{{
-                new ArrayStorage()},
-                {new SortedArrayStorage()}};
-    }
+public abstract class AbstractArrayStorageTest {
+    final AbstractArrayStorage storage;
+    final Resume r1 = new Resume();
+    final Resume r2 = new Resume();
+    final Resume r3 = new Resume();
+    final Resume r4 = new Resume("UUID_NOT_EXIST");
 
     @Before
     public void setUp() throws Exception {
@@ -41,39 +23,49 @@ public class AbstractArrayStorageTest {
         storage.save(r1);
         storage.save(r2);
         storage.save(r3);
-        storage.save(r4);
-        storage.save(r5);
+    }
+
+    public AbstractArrayStorageTest(AbstractArrayStorage storage) {
+        this.storage = storage;
     }
 
     // method size()
     @Test
-    public void checkSizeStorage_Size() {
-        Assert.assertEquals(5, storage.size());
+    public void size() {
+        assertSize(3);
+    }
+
+    private void assertSize(int i) {
+        Assert.assertEquals(i, storage.size());
     }
 
     // method clear()
     @Test
-    public void storageShouldBeEmpty_Clear() {
+    public void clear() {
         storage.clear();
-        Assert.assertEquals(0, storage.size());
+        assertSize(0);
+        Assert.assertArrayEquals(new Resume[]{}, storage.getAll());
     }
 
     // method update()
     @Test(expected = NotExistStorageException.class)
-    public void shouldReturnNotExistStorageException_Update() {
-        storage.update(r6);
+    public void updateNotExist() {
+        storage.update(r4);
     }
 
     @Test
-    public void shouldReturnUpdatedResume_Update(){
-        storage.update(r1);
-        Assert.assertEquals(r1,storage.get(r1.getUuid()));
+    public void update() {
+        Resume resume1 = new Resume("resume");
+        storage.save(resume1);
+        Resume resume2 = new Resume("resume");
+        storage.update(resume2);
+        Assert.assertSame(resume2, storage.get(resume1.getUuid()));
     }
 
     // method getAll()
     @Test
     public void checkAllResumes_GetAll() {
-        Resume[] resumes = new Resume[]{r1, r2, r3, r4, r5};
+        Resume[] resumes = new Resume[]{r1, r2, r3};
         if (storage instanceof SortedArrayStorage) {
             Arrays.sort(resumes);
         }
@@ -82,13 +74,14 @@ public class AbstractArrayStorageTest {
 
     // method save()
     @Test
-    public void shouldAddOneMoreResume_Save() {
-        storage.save(r6);
-        Assert.assertEquals(6, storage.size());
+    public void save() {
+        storage.save(r4);
+        assertGet(r4);
+        assertSize(4);
     }
 
     @Test(expected = StorageException.class)
-    public void shouldReturnStorageOverFlowException_Save() {
+    public void saveOverflow() {
         storage.clear();
         try {
             for (int i = 0; i < AbstractArrayStorage.STORAGE_LIMIT; i++) {
@@ -101,37 +94,37 @@ public class AbstractArrayStorageTest {
     }
 
     @Test(expected = ExistStorageException.class)
-    public void shouldReturnExistStorageException_Save() {
+    public void saveExist() {
         storage.save(r1);
-    }
-
-    @Test
-    public void shouldFindNewElement_Save() {
-        storage.save(r6);
-        Assert.assertEquals(r6, storage.get(r6.getUuid()));
     }
 
     // method delete()
     @Test(expected = NotExistStorageException.class)
-    public void shouldDeleteElementFromStorage_Delete() {
+    public void deleteNotExist() {
         storage.delete(r1.getUuid());
-        storage.get(r1.getUuid());
+        assertGet(r1);
     }
 
     @Test
-    public void shouldReduceListOneLess_Delete() {
+    public void delete() {
         storage.delete(r1.getUuid());
-        Assert.assertEquals(4, storage.size());
+        assertSize(2);
     }
 
     // method get()
     @Test
-    public void shouldReturnTheSameResume_Get() {
-        Assert.assertEquals(r1, storage.get(r1.getUuid()));
+    public void get() {
+        assertGet(r1);
+        assertGet(r2);
+        assertGet(r3);
+    }
+
+    public void assertGet(Resume resume) {
+        Assert.assertEquals(resume, storage.get(resume.getUuid()));
     }
 
     @Test(expected = NotExistStorageException.class)
-    public void shouldReturnNotExistException_Get() {
-        storage.get(r6.getUuid());
+    public void getNotExist() {
+        storage.get(r4.getUuid());
     }
 }

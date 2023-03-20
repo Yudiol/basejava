@@ -4,9 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ArrayStorageTest extends AbstractArrayStorageTest {
-    public ArrayStorageTest(AbstractArrayStorage storage) {
-        super(storage);
-        this.storage = new ArrayStorage();
+    public ArrayStorageTest() {
+        super(new ArrayStorage());
     }
 
     // method getIndex()
@@ -18,7 +17,7 @@ public class ArrayStorageTest extends AbstractArrayStorageTest {
 
     @Test
     public void shouldReturnIndexEqualToMinusOne_GetIndex() {
-        Assert.assertEquals(-1, storage.getIndex(r6.getUuid()));
+        Assert.assertEquals(-1, storage.getIndex(r4.getUuid()));
     }
 
     // method fillDeletedElement()

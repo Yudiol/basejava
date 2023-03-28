@@ -15,7 +15,7 @@ public abstract class AbstractStorageTest {
     final Resume r4 = new Resume("UUID_NOT_EXIST");
 
     @Before
-    public void setUp(){
+    public void setUp() {
         storage.clear();
         storage.save(r1);
         storage.save(r2);
@@ -58,7 +58,6 @@ public abstract class AbstractStorageTest {
     public void getNotExist() {
         storage.get(r4.getUuid());
     }
-
 
     // method save()
     @Test

@@ -5,48 +5,58 @@ import com.urise.webapp.model.Resume;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
+
 
 public class ListStorage extends AbstractStorage {
-    List<Resume> resumes = new ArrayList<>();
+    List<Resume> storage = new ArrayList<>();
 
     @Override
     public List<Resume> getAll() {
-        return resumes;
+        return storage;
     }
 
     @Override
-    public void saveResume(Resume r, int index) {
-        resumes.add(r);
+    Object isExist(String uuid) {
+        return getIndex(uuid);
+    }
+
+    @Override
+    public void saveResume(Object searchKey, Resume r) {
+        storage.add(r);
     }
 
     @Override
     void clearResume() {
-        resumes.clear();
+        storage.clear();
     }
 
     @Override
-    void deleteResume(int index) {
-        resumes.remove(getResume(index));
+    void deleteResume(Object searchKey) {
+        storage.remove(getResume(searchKey));
     }
 
     @Override
     public int sizeResume() {
-        return resumes.size();
+        return storage.size();
     }
 
     public int getIndex(String uuid) {
-        Optional<Resume> resume = resumes.stream().filter(r -> Objects.equals(r.getUuid(), uuid)).findFirst();
-        return resume.map(value -> resumes.indexOf(value)).orElse(-1);
+        int index = -1;
+        for (int i = 0; i < size(); i++) {
+            if (Objects.equals(uuid, storage.get(i).getUuid())) {
+                index = i;
+            }
+        }
+        return index;
     }
 
     @Override
-    protected void updateResume(int index, Resume resume) {
-        resumes.set(index, resume);
+    protected void updateResume(Object searchKey, Resume resume) {
+        storage.set((int) searchKey, resume);
     }
 
     @Override
-    protected Resume getResume(int index) {
-        return resumes.get(index);
+    protected Resume getResume(Object searchKey) {
+        return storage.get((int) searchKey);
     }
 }

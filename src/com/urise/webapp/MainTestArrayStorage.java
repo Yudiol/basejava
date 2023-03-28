@@ -1,14 +1,14 @@
 package com.urise.webapp;
 
 import com.urise.webapp.model.Resume;
-import com.urise.webapp.storage.AbstractArrayStorage;
-import com.urise.webapp.storage.SortedArrayStorage;
+import com.urise.webapp.storage.AbstractStorage;
+import com.urise.webapp.storage.MapStorage;
 
 /**
  * Test ru.javawebinar.basejava.storage.ArrayStorage
  */
 public class MainTestArrayStorage {
-    static final AbstractArrayStorage ARRAY_STORAGE = new SortedArrayStorage();
+    static final AbstractStorage ARRAY_STORAGE = new MapStorage();
 
     public static void main(String[] args) {
         Resume r1 = new Resume("uuid1");
@@ -24,19 +24,19 @@ public class MainTestArrayStorage {
 
         System.out.println("Get dummy: " + ARRAY_STORAGE.get("dummy"));
 
-        printAll();
+//        printAll();
         ARRAY_STORAGE.delete(r1.getUuid());
-        printAll();
+//        printAll();
         ARRAY_STORAGE.clear();
-        printAll();
+//        printAll();
 
         System.out.println("Size: " + ARRAY_STORAGE.size());
     }
 
-    static void printAll() {
-        System.out.println("\nGet All");
-        for (Resume r : ARRAY_STORAGE.getAll()) {
-            System.out.println(r);
-        }
-    }
+//    static void printAll() {
+//        System.out.println("\nGet All");
+//        for (Resume r : ARRAY_STORAGE.getAll()) {
+//            System.out.println(r);
+//        }
+//    }
 }

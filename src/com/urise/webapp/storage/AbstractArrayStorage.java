@@ -5,9 +5,6 @@ import com.urise.webapp.model.Resume;
 
 import java.util.Arrays;
 
-/**
- * Array based storage for Resumes
- */
 public abstract class AbstractArrayStorage extends AbstractStorage {
     static final int STORAGE_LIMIT = 10000;
     protected Resume[] storage = new Resume[STORAGE_LIMIT];
@@ -26,34 +23,40 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         size = 0;
     }
 
-    public void deleteResume(int index) {
-        fillDeletedElement(index);
+    @Override
+    public void deleteResume(Object searchKey) {
+        fillDeletedElement((int) searchKey);
         storage[size - 1] = null;
         size--;
     }
 
     @Override
-    protected Resume getResume(int index) {
-        return storage[index];
+    protected Resume getResume(Object searchKey) {
+        return storage[(int) searchKey];
     }
 
-    public void saveResume(Resume r, int index) {
+    @Override
+    public void saveResume(Object searchKey, Resume r) {
         if (size == STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         } else {
-            insertElement(r, index);
+            insertElement(searchKey, r);
             size++;
         }
     }
 
+    public Object isExist(String uuid) {
+        return getIndex(uuid);
+    }
+
     @Override
-    protected void updateResume(int index, Resume r) {
-        storage[index] = r;
+    protected void updateResume(Object searchKey, Resume r) {
+        storage[(Integer) searchKey] = r;
     }
 
     abstract void fillDeletedElement(int index);
 
-    abstract void insertElement(Resume r, int index);
+    abstract void insertElement(Object searchKey, Resume r);
 
     abstract int getIndex(String uuid);
 }

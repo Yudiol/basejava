@@ -2,25 +2,32 @@ package com.urise.webapp.storage;
 
 import com.urise.webapp.model.Resume;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MapStorage extends AbstractStorage {
-    Map<String, Resume> storage = new LinkedHashMap<>();
+public class MapUuidStorage extends AbstractStorage {
+    private Map<String, Resume> storage = new LinkedHashMap<>();
 
     @Override
-    public Map<String, Resume> getAll() {
-        return storage;
+    public List<Resume> getAll() {
+        return new ArrayList<>(storage.values());
     }
 
     @Override
-    Object isExist(String uuid) {
+    protected Object getSearchKey(Object uuid) {
         for (String key : storage.keySet()) {
             if (key.equals(uuid)) {
                 return key;
             }
         }
         return -1;
+    }
+
+    @Override
+    protected boolean isExist(Object key) {
+        return !(key instanceof Integer && (int) key == -1);
     }
 
     @Override

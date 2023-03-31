@@ -4,14 +4,15 @@ import com.urise.webapp.exception.StorageException;
 import com.urise.webapp.model.Resume;
 
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class AbstractArrayStorage extends AbstractStorage {
     static final int STORAGE_LIMIT = 10000;
     protected Resume[] storage = new Resume[STORAGE_LIMIT];
     protected int size = 0;
 
-    public Resume[] getAll() {
-        return Arrays.copyOfRange(storage, 0, size);
+    public List<Resume> getAll() {
+        return Arrays.asList(Arrays.copyOfRange(storage, 0, size));
     }
 
     public int sizeResume() {
@@ -45,8 +46,8 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         }
     }
 
-    public Object isExist(String uuid) {
-        return getIndex(uuid);
+    protected boolean isExist(Object index) {
+        return !((int) index < 0);
     }
 
     @Override
@@ -58,5 +59,4 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
 
     abstract void insertElement(Object searchKey, Resume r);
 
-    abstract int getIndex(String uuid);
 }

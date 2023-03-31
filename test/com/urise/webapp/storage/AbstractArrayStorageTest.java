@@ -5,21 +5,10 @@ import com.urise.webapp.model.Resume;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 public abstract class AbstractArrayStorageTest extends AbstractStorageTest {
 
     public AbstractArrayStorageTest(AbstractArrayStorage storage) {
         super(storage);
-    }
-    // method getAll()
-    @Test
-    public void getAll() {
-        Resume[] resumes = new Resume[]{r1, r2, r3};
-        if (storage instanceof SortedArrayStorage) {
-            Arrays.sort(resumes);
-        }
-        Assert.assertArrayEquals(resumes, (Resume[]) storage.getAll());
     }
 
     @Test(expected = StorageException.class)
@@ -34,6 +23,4 @@ public abstract class AbstractArrayStorageTest extends AbstractStorageTest {
         }
         storage.save(new Resume());
     }
-
-
 }

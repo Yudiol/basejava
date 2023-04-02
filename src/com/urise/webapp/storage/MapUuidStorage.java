@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MapUuidStorage extends AbstractStorage {
-    private Map<String, Resume> storage = new LinkedHashMap<>();
+    private final Map<String, Resume> storage = new LinkedHashMap<>();
 
     @Override
     public List<Resume> getAll() {
@@ -16,7 +16,7 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(Object uuid) {
+    protected Object getSearchKey(String uuid) {
         for (String key : storage.keySet()) {
             if (key.equals(uuid)) {
                 return key;
@@ -31,22 +31,22 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
-    public void saveResume(Object searchKey, Resume r) {
+    protected void saveResume(Object searchKey, Resume r) {
         storage.put(r.getUuid(), r);
     }
 
     @Override
-    void clearResume() {
+    protected void clearResume() {
         storage.clear();
     }
 
     @Override
-    void deleteResume(Object searchKey) {
+    protected void deleteResume(Object searchKey) {
         storage.remove((String) searchKey);
     }
 
     @Override
-    public int sizeResume() {
+    protected int sizeResume() {
         return storage.size();
     }
 

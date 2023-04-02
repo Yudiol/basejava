@@ -2,13 +2,10 @@ package com.urise.webapp.storage;
 
 import com.urise.webapp.model.Resume;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MapResumeStorage extends AbstractStorage {
-    private Map<Resume, Resume> storage = new LinkedHashMap<>();
+    private final Map<String, Resume> storage = new LinkedHashMap<>();
 
     @Override
     public List<Resume> getAll() {
@@ -16,48 +13,42 @@ public class MapResumeStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(Object uuid) {
-        String key = checkResume(uuid);
-        for (Resume keys : storage.values()) {
-            if (keys.getUuid().equals(key)) {
-                return keys;
-            }
-        }
-        return -1;
+    protected Object getSearchKey(String uuid) {
+        return storage.get(uuid);
     }
 
     @Override
     protected boolean isExist(Object key) {
-        return !(key instanceof Integer && (int) key == -1);
+        return !Objects.isNull(key);
     }
 
     @Override
-    public void saveResume(Object searchKey, Resume r) {
-        storage.put(r, r);
+    protected void saveResume(Object searchKey, Resume r) {
+        storage.put(r.getUuid(), r);
     }
 
     @Override
-    void clearResume() {
+    protected void clearResume() {
         storage.clear();
     }
 
     @Override
-    void deleteResume(Object searchKey) {
-        storage.remove((Resume) searchKey);
+    protected void deleteResume(Object searchKey) {
+        storage.remove(((Resume) searchKey).getUuid());
     }
 
     @Override
-    public int sizeResume() {
+    protected int sizeResume() {
         return storage.size();
     }
 
     @Override
     protected void updateResume(Object searchKey, Resume resume) {
-        storage.put((Resume) searchKey, resume);
+        storage.put(((Resume) searchKey).getUuid(), resume);
     }
 
     @Override
     protected Resume getResume(Object searchKey) {
-        return storage.get((Resume) searchKey);
+        return storage.get(((Resume) searchKey).getUuid());
     }
 }

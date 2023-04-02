@@ -18,12 +18,12 @@ public abstract class AbstractStorage implements Storage {
         clearResume();
     }
 
-    public void update(Resume resume) {
-        Object searchKey = getNotExistingSearchKey(resume.getUuid());
-        updateResume(searchKey, resume);
+    public void update(Resume r) {
+        Object searchKey = getNotExistingSearchKey(r.getUuid());
+        updateResume(searchKey, r);
     }
 
-    public Resume get(Object uuid) {
+    public Resume get(String uuid) {
         Object searchKey = getNotExistingSearchKey(uuid);
         return getResume(searchKey);
     }
@@ -33,7 +33,7 @@ public abstract class AbstractStorage implements Storage {
         saveResume(searchKey, r);
     }
 
-    public void delete(Object uuid) {
+    public void delete(String uuid) {
         Object searchKey = getNotExistingSearchKey(uuid);
         deleteResume(searchKey);
     }
@@ -42,31 +42,23 @@ public abstract class AbstractStorage implements Storage {
         return sizeResume();
     }
 
-    private Object getExistingSearchKey(Object uuid) {
+    private Object getExistingSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
         if (isExist(searchKey)) {
-            throw new ExistStorageException((String) uuid);
+            throw new ExistStorageException(uuid);
         }
         return searchKey;
     }
 
-    private Object getNotExistingSearchKey(Object uuid) {
+    private Object getNotExistingSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
         if (!isExist(searchKey)) {
-            throw new NotExistStorageException(checkResume(uuid));
+            throw new NotExistStorageException(uuid);
         }
         return searchKey;
     }
 
-    protected String checkResume(Object uuid) {
-        if (uuid instanceof Resume) {
-            return ((Resume) uuid).getUuid();
-        } else {
-            return (String) uuid;
-        }
-    }
-
-    abstract Object getSearchKey(Object uuid);
+    abstract Object getSearchKey(String uuid);
 
     abstract boolean isExist(Object uuid);
 
@@ -83,6 +75,4 @@ public abstract class AbstractStorage implements Storage {
     abstract void updateResume(Object searchKey, Resume resume);
 
     abstract Resume getResume(Object searchKey);
-
-
 }

@@ -8,21 +8,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractStorageTest {
     AbstractStorage storage;
-    final Resume r1 = new Resume("UUID_3", "1");
-    final Resume r2 = new Resume("UUID_2", "1");
-    final Resume r3 = new Resume("UUID_1", "3");
+    final Resume r1 = new Resume("UUID_1", "1");
+    final Resume r2 = new Resume("1");
+    final Resume r3 = new Resume("3");
     final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
 
     @Before
     public void setUp() {
         storage.clear();
-        storage.save(r3);
-        storage.save(r2);
         storage.save(r1);
+        storage.save(r2);
+        storage.save(r3);
     }
 
     public AbstractStorageTest(AbstractStorage storage) {
@@ -32,9 +33,10 @@ public abstract class AbstractStorageTest {
     @Test
     public void getAllSorted() {
         List<Resume> resumes = new ArrayList<>();
+        resumes.add(r3);
         resumes.add(r2);
         resumes.add(r1);
-        resumes.add(r3);
+        resumes.sort(Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid));
         Assert.assertEquals(resumes, storage.getAllSorted());
     }
 
@@ -53,7 +55,7 @@ public abstract class AbstractStorageTest {
 
     @Test
     public void update() {
-        Resume resume = new Resume("UUID_3", "1");
+        Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
         Assert.assertSame(resume, storage.get(r1.getUuid()));
     }

@@ -58,5 +58,4 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     abstract void fillDeletedElement(int index);
 
     abstract void insertElement(Object searchKey, Resume r);
-
 }

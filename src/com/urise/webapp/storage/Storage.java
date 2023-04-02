@@ -12,9 +12,9 @@ public interface Storage {
 
     void save(Resume r);
 
-    Resume get(Object uuid);
+    Resume get(String uuid);
 
-    void delete(Object uuid);
+    void delete(String uuid);
 
     List<Resume> getAllSorted();
 

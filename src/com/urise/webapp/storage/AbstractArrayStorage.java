@@ -6,7 +6,7 @@ import com.urise.webapp.model.Resume;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractArrayStorage extends AbstractStorage {
+public abstract class AbstractArrayStorage extends AbstractStorage<Integer> {
     static final int STORAGE_LIMIT = 10000;
     protected Resume[] storage = new Resume[STORAGE_LIMIT];
     protected int size = 0;
@@ -25,19 +25,19 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     }
 
     @Override
-    public void deleteResume(Object searchKey) {
-        fillDeletedElement((int) searchKey);
+    public void deleteResume(Integer searchKey) {
+        fillDeletedElement(searchKey);
         storage[size - 1] = null;
         size--;
     }
 
     @Override
-    protected Resume getResume(Object searchKey) {
-        return storage[(int) searchKey];
+    protected Resume getResume(Integer searchKey) {
+        return storage[ searchKey];
     }
 
     @Override
-    public void saveResume(Object searchKey, Resume r) {
+    public void saveResume(Integer searchKey, Resume r) {
         if (size == STORAGE_LIMIT) {
             throw new StorageException("Storage overflow", r.getUuid());
         } else {
@@ -46,16 +46,16 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
         }
     }
 
-    protected boolean isExist(Object index) {
+    protected boolean isExist(Integer index) {
         return !((int) index < 0);
     }
 
     @Override
-    protected void updateResume(Object searchKey, Resume r) {
-        storage[(Integer) searchKey] = r;
+    protected void updateResume(Integer searchKey, Resume r) {
+        storage[searchKey] = r;
     }
 
     abstract void fillDeletedElement(int index);
 
-    abstract void insertElement(Object searchKey, Resume r);
+    abstract void insertElement(Integer searchKey, Resume r);
 }

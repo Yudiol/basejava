@@ -19,5 +19,8 @@ public class MainReflection {
         Method method = r.getClass().getDeclaredMethod("toString");
         System.out.println(method.invoke(r));
         System.out.println(r);
+        for (int i =0 ; i<1000 ;i++){
+            System.out.println(i + "   " + (char)i);
+        }
     }
 }

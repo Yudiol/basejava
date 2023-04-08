@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapUuidStorage extends AbstractStorage {
+public class MapUuidStorage extends AbstractStorage<String> {
     private final Map<String, Resume> storage = new LinkedHashMap<>();
 
     @Override
@@ -16,22 +16,22 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(String uuid) {
+    protected String getSearchKey(String uuid) {
         for (String key : storage.keySet()) {
             if (key.equals(uuid)) {
                 return key;
             }
         }
-        return -1;
+        return null;
     }
 
     @Override
-    protected boolean isExist(Object key) {
-        return !(key instanceof Integer && (int) key == -1);
+    protected boolean isExist(String key) {
+        return !(key == null);
     }
 
     @Override
-    protected void saveResume(Object searchKey, Resume r) {
+    protected void saveResume(String searchKey, Resume r) {
         storage.put(r.getUuid(), r);
     }
 
@@ -41,8 +41,8 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
-    protected void deleteResume(Object searchKey) {
-        storage.remove((String) searchKey);
+    protected void deleteResume(String searchKey) {
+        storage.remove(searchKey);
     }
 
     @Override
@@ -51,12 +51,12 @@ public class MapUuidStorage extends AbstractStorage {
     }
 
     @Override
-    protected void updateResume(Object searchKey, Resume resume) {
-        storage.put((String) searchKey, resume);
+    protected void updateResume(String searchKey, Resume resume) {
+        storage.put(searchKey, resume);
     }
 
     @Override
-    protected Resume getResume(Object searchKey) {
-        return storage.get((String) searchKey);
+    protected Resume getResume(String searchKey) {
+        return storage.get(searchKey);
     }
 }

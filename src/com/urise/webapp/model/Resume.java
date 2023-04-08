@@ -1,5 +1,7 @@
 package com.urise.webapp.model;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -12,19 +14,41 @@ public class Resume implements Comparable<Resume> {
     private String uuid;
 
     private String fullName;
+    private final Map<ContactType, String> contacts = new EnumMap<>(ContactType.class);
+    private final Map<SectionType, Section> sections = new EnumMap<>(SectionType.class);
 
     public Resume() {
         this(UUID.randomUUID().toString());
     }
 
     public Resume(String fullName) {
+        Objects.requireNonNull(fullName, "fullName must not be null");
         this.uuid = UUID.randomUUID().toString();
         this.fullName = fullName;
     }
 
     public Resume(String uuid, String fullName) {
+        Objects.requireNonNull(uuid, "uuid must not be null");
+        Objects.requireNonNull(fullName, "fullName must not be null");
         this.uuid = uuid;
         this.fullName = fullName;
+    }
+
+
+    public String getContact(ContactType contact) {
+        return contacts.get(contact);
+    }
+
+    public Section getSection(SectionType section) {
+        return sections.get(section);
+    }
+
+    public void setContact(ContactType type, String value) {
+        contacts.put(type, value);
+    }
+
+    public void setSection(SectionType type, Section section) {
+        sections.put(type, section);
     }
 
     public String getFullName() {
@@ -59,6 +83,7 @@ public class Resume implements Comparable<Resume> {
 
     @Override
     public int compareTo(Resume o) {
-        return uuid.compareTo(o.uuid);
+        int cmpr = fullName.compareTo(o.getFullName());
+        return cmpr != 0 ? cmpr : uuid.compareTo(o.uuid);
     }
 }

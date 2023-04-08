@@ -4,7 +4,7 @@ import com.urise.webapp.model.Resume;
 
 import java.util.*;
 
-public class MapResumeStorage extends AbstractStorage {
+public class MapResumeStorage extends AbstractStorage<Resume> {
     private final Map<String, Resume> storage = new LinkedHashMap<>();
 
     @Override
@@ -13,17 +13,17 @@ public class MapResumeStorage extends AbstractStorage {
     }
 
     @Override
-    protected Object getSearchKey(String uuid) {
+    protected Resume getSearchKey(String uuid) {
         return storage.get(uuid);
     }
 
     @Override
-    protected boolean isExist(Object key) {
+    protected boolean isExist(Resume key) {
         return !Objects.isNull(key);
     }
 
     @Override
-    protected void saveResume(Object searchKey, Resume r) {
+    protected void saveResume(Resume searchKey, Resume r) {
         storage.put(r.getUuid(), r);
     }
 
@@ -33,8 +33,8 @@ public class MapResumeStorage extends AbstractStorage {
     }
 
     @Override
-    protected void deleteResume(Object searchKey) {
-        storage.remove(((Resume) searchKey).getUuid());
+    protected void deleteResume(Resume searchKey) {
+        storage.remove(searchKey.getUuid());
     }
 
     @Override
@@ -43,12 +43,12 @@ public class MapResumeStorage extends AbstractStorage {
     }
 
     @Override
-    protected void updateResume(Object searchKey, Resume resume) {
-        storage.put(((Resume) searchKey).getUuid(), resume);
+    protected void updateResume(Resume searchKey, Resume resume) {
+        storage.put(searchKey.getUuid(), resume);
     }
 
     @Override
-    protected Resume getResume(Object searchKey) {
-        return storage.get(((Resume) searchKey).getUuid());
+    protected Resume getResume(Resume searchKey) {
+        return storage.get(searchKey.getUuid());
     }
 }

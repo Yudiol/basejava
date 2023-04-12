@@ -6,9 +6,9 @@ import java.util.Objects;
 public class Organization {
     private final Link homePage;
 
-    private final List<Post> posts;
+    private final List<Period> posts;
 
-    public Organization(String name, String url, List<Post> posts) {
+    public Organization(String name, String url, List<Period> posts) {
         this.homePage = new Link(name, url);
         this.posts = posts;
     }
@@ -17,7 +17,7 @@ public class Organization {
         return homePage;
     }
 
-    public List<Post> getPosts() {
+    public List<Period> getPosts() {
         return posts;
     }
 

@@ -3,82 +3,88 @@ package com.urise.webapp.storage;
 import com.urise.webapp.model.*;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class ResumeTestData {
-    public Resume createResume(String uuid, String fullName) {
-        Resume resume = new Resume(uuid, fullName);
-        getContact(resume, listContacts());
-        getSection(resume, listSections());
-        return resume;
-    }
-
-    public Resume createResume(String uuid, String fullName, Map<ContactType, String> contacts, Map<SectionType, Section> sections) {
-        Resume resume = new Resume(uuid, fullName);
-        getContact(resume, contacts);
-        getSection(resume, sections);
-        return resume;
-    }
+public class PrintResumeTestData {
+    public static void main(String[] args) {
 
 
-    private static void getContact(Resume resume, Map<ContactType, String> list) {
-        for (Map.Entry<ContactType, String> pair : list.entrySet()) {
-            resume.setContact(pair.getKey(), pair.getValue());
+        Resume resume = new Resume("Григорий Кислин");
+
+        getContact(resume);
+        resume.setSection(SectionType.ACHIEVEMENT, getList(listAchievement()));
+        resume.setSection(SectionType.QUALIFICATIONS, getList(listQualification()));
+        resume.setSection(SectionType.OBJECTIVE,
+                new TextSection("Ведущий стажировок и корпоративного обучения по Java Web и Enterprise технологиям"));
+        resume.setSection(SectionType.PERSONAL,
+                new TextSection("Аналитический склад ума, сильная логика, креативность, инициативность. Пурист кода и архитектуры."));
+        resume.setSection(SectionType.EXPERIENCE, getOrganization(listOrganization()));
+        resume.setSection(SectionType.EDUCATION, getOrganization(listEducation()));
+
+
+        System.out.println(resume.getFullName());
+
+        for (ContactType type : ContactType.values()) {
+            System.out.println(type.getTitle() + " " + resume.getContact(type));
         }
+
+        System.out.println();
+
+        printText(resume, SectionType.OBJECTIVE);
+        printText(resume, SectionType.PERSONAL);
+        printList(resume, SectionType.ACHIEVEMENT);
+        printList(resume, SectionType.QUALIFICATIONS);
+        printOrganization(resume, SectionType.EXPERIENCE);
+        printOrganization(resume, SectionType.EDUCATION);
+
     }
 
-    private static void getSection(Resume resume, Map<SectionType, Section> list) {
-        for (Map.Entry<SectionType, Section> pair : list.entrySet()) {
-            resume.setSection(pair.getKey(), pair.getValue());
-        }
+    public static void printText(Resume resume, SectionType type) {
+        System.out.println(type.getTitle() + "\n" + ((TextSection) resume.getSection(type)).getContent() + "\n");
     }
 
+    public static void printList(Resume resume, SectionType type) {
+        System.out.println();
+        System.out.println(type.getTitle() + "\n");
+        ((ListSection) resume.getSection(type)).getItems().stream()
+                .forEach(e -> System.out.println((char) 176 + " " + e));
+
+    }
+
+    public static void printOrganization(Resume resume, SectionType type) {
+        System.out.println("\n" + type.getTitle());
+        ((OrganizationSection) resume.getSection(type)).getOrganizations().stream()
+                .peek(e -> System.out.println("\n\t\t\t\t\t" + e.getHomePage().getName())).flatMap(el -> el.getPosts().stream()).forEach(
+                        element -> System.out.println(element.getStartDate().format(DateTimeFormatter.ofPattern("MM/yyyy")) + " - " +
+                                element.getEndDate().format(DateTimeFormatter.ofPattern("MM/yyyy")) + "   " + element.getTitle()
+                                + "\n\t\t\t\t\t" + element.getDescription()));
+    }
+
+    public static void getContact(Resume resume) {
+        resume.setContact(ContactType.MOBILE, "+7(921) 855-0482");
+        resume.setContact(ContactType.SKYPE, "skype:grigory.kislin");
+        resume.setContact(ContactType.MAIL, "gkislin@yandex.ru");
+        resume.setContact(ContactType.LINKEDIN, "Профиль LinkedIn");
+        resume.setContact(ContactType.GITHUB, "https://github.com/gkislin");
+        resume.setContact(ContactType.STATCKOVERFLOW, "https://stackoverflow.com/users/548473/grigory-kislin");
+        resume.setContact(ContactType.HOME_PAGE, "http://gkislin.ru/");
+    }
 
     public static ListSection getList(List<String> list) {
         return new ListSection(list);
     }
 
-    private static OrganizationSection getOrganization(List<Organization> list) {
+    public static OrganizationSection getOrganization(List<Organization> list) {
         return new OrganizationSection(list);
     }
 
-    private static TextSection getText(String str) {
-        return new TextSection(str);
-    }
 
 
 
-
-
-
-    private static Map<ContactType, String> listContacts() {
-        Map<ContactType, String> list = new EnumMap<>(ContactType.class);
-        list.put(ContactType.MOBILE, "+7(921) 855-0482");
-        list.put(ContactType.SKYPE, "skype:grigory.kislin");
-        list.put(ContactType.MAIL, "gkislin@yandex.ru");
-        list.put(ContactType.LINKEDIN, "Профиль LinkedIn");
-        list.put(ContactType.GITHUB, "https://github.com/gkislin");
-        list.put(ContactType.STATCKOVERFLOW, "https://stackoverflow.com/users/548473/grigory-kislin");
-        list.put(ContactType.HOME_PAGE, "http://gkislin.ru/");
-        return list;
-    }
-
-    private static Map<SectionType, Section> listSections() {
-        Map<SectionType, Section> list = new EnumMap<>(SectionType.class);
-        list.put(SectionType.PERSONAL, getText(personal));
-        list.put(SectionType.OBJECTIVE, getText(objective));
-        list.put(SectionType.ACHIEVEMENT, getList(listAchievement()));
-        list.put(SectionType.QUALIFICATIONS, getList(listQualification()));
-        list.put(SectionType.EXPERIENCE, getOrganization(listOrganization()));
-        list.put(SectionType.EDUCATION, getOrganization(listEducation()));
-        return list;
-    }
-
-
-    private static String personal = "Аналитический склад ума, сильная логика, креативность, инициативность. Пурист кода и архитектуры.";
-    private static String objective = "Ведущий стажировок и корпоративного обучения по Java Web и Enterprise технологиям";
-
-    private static List<String> listAchievement() {
+    public static List<String> listAchievement() {
         List<String> achievementList = new ArrayList<>();
         achievementList.add("Организация команды и успешная реализация Java проектов для сторонних заказчиков: приложения автопарк " +
                 "на стеке Spring Cloud/микросервисы, система мониторинга показателей спортсменов на Spring Boot, участие " +
@@ -101,7 +107,7 @@ public class ResumeTestData {
         return achievementList;
     }
 
-    private static List<String> listQualification() {
+    public static List<String> listQualification() {
         List<String> qualificationList = new ArrayList<>();
         qualificationList.add("JEE AS: GlassFish (v2.1, v3), OC4J, JBoss, Tomcat, Jetty, WebLogic, WSO2");
         qualificationList.add("Version control: Subversion, Git, Mercury, ClearCase, Perforce");
@@ -122,7 +128,6 @@ public class ResumeTestData {
         qualificationList.add("Родной русский, английский \"upper intermediate\"");
         return qualificationList;
     }
-
 
     public static List<Organization> listOrganization() {
         List<Organization> organizations = new ArrayList<>();
@@ -198,7 +203,7 @@ public class ResumeTestData {
         list.add(new Organization("Санкт-Петербургский национальный исследовательский университет информационных технологий, механики и оптики", "https://www.coursera.org/learn/scala-functional-programming",
                 new ArrayList<>(Arrays.asList(new Period(
                         LocalDate.of(1993, 9, 01), LocalDate.of(1996, 07, 01),
-                        "Аспирантура (программист С, С++)", ""), new Period(
+                        "Аспирантура (программист С, С++)", ""),new Period(
                         LocalDate.of(1987, 9, 01), LocalDate.of(1993, 07, 01),
                         "Инженер (программист Fortran, C)", "")))));
         list.add(new Organization("Заочная физико-техническая школа при МФТИ", "https://www.coursera.org/learn/scala-functional-programming",

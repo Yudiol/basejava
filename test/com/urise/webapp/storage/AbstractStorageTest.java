@@ -12,11 +12,12 @@ import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractStorageTest {
-    AbstractStorage storage;
-    final Resume r1 = new Resume("UUID_1", "1");
-    final Resume r2 = new Resume("1");
-    final Resume r3 = new Resume("3");
-    final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
+    private final ResumeTestData resumeTestData = new ResumeTestData();
+    final AbstractStorage storage;
+    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
+    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
+    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
+    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
 
     @Before
     public void setUp() {
@@ -26,7 +27,7 @@ public abstract class AbstractStorageTest {
         storage.save(r3);
     }
 
-    public AbstractStorageTest(AbstractStorage storage) {
+    public AbstractStorageTest( AbstractStorage storage) {
         this.storage = storage;
     }
 

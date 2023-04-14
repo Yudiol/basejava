@@ -4,6 +4,7 @@ import com.urise.webapp.exception.ExistStorageException;
 import com.urise.webapp.exception.NotExistStorageException;
 import com.urise.webapp.model.Resume;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -19,7 +20,7 @@ public abstract class AbstractStorage<SK> implements Storage {
         return resumes;
     }
 
-    public void clear() {
+    public void clear() throws IOException {
         LOG.info("Clear");
         clearResume();
     }
@@ -77,7 +78,7 @@ public abstract class AbstractStorage<SK> implements Storage {
 
     abstract void saveResume(SK searchKey, Resume r);
 
-    abstract void clearResume();
+    abstract void clearResume() throws IOException;
 
     abstract int sizeResume();
 
@@ -87,5 +88,5 @@ public abstract class AbstractStorage<SK> implements Storage {
 
     abstract void updateResume(SK searchKey, Resume resume);
 
-    abstract Resume getResume(SK searchKey);
+    abstract Resume getResume(SK searchKey) throws IOException;
 }

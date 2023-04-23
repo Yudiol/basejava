@@ -4,13 +4,15 @@ import com.urise.webapp.model.Resume;
 import com.urise.webapp.storage.AbstractStorage;
 import com.urise.webapp.storage.MapResumeStorage;
 
+import java.io.IOException;
+
 /**
  * Test ru.javawebinar.basejava.storage.ArrayStorage
  */
 public class MainTestArrayStorage {
     static final AbstractStorage ARRAY_STORAGE = new MapResumeStorage();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Resume r1 = new Resume("uuid1","4");
         Resume r2 = new Resume("uuid2","3");
         Resume r3 = new Resume("uuid3","2");

@@ -31,7 +31,7 @@ public abstract class AbstractStorage<SK> implements Storage {
         updateResume(searchKey, r);
     }
 
-    public Resume get(String uuid) {
+    public Resume get(String uuid)  {
         LOG.info("Get " + uuid);
         SK searchKey = getNotExistingSearchKey(uuid);
         return getResume(searchKey);
@@ -88,5 +88,5 @@ public abstract class AbstractStorage<SK> implements Storage {
 
     abstract void updateResume(SK searchKey, Resume resume);
 
-    abstract Resume getResume(SK searchKey) throws IOException;
+    abstract Resume getResume(SK searchKey);
 }

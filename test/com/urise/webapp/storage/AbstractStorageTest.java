@@ -7,11 +7,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractStorageTest {
+    final static String STORAGE_DIR = new String("C:/Project/Storage");
     private final ResumeTestData resumeTestData = new ResumeTestData();
     final AbstractStorage storage;
     final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
@@ -20,7 +22,7 @@ public abstract class AbstractStorageTest {
     final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         storage.clear();
         storage.save(r1);
         storage.save(r2);
@@ -43,7 +45,7 @@ public abstract class AbstractStorageTest {
 
     // method clear()
     @Test
-    public void clear() {
+    public void clear() throws IOException {
         storage.clear();
         assertSize(0);
     }
@@ -58,7 +60,7 @@ public abstract class AbstractStorageTest {
     public void update() {
         Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
-        Assert.assertSame(resume, storage.get(r1.getUuid()));
+        Assert.assertTrue(resume.equals(storage.get("UUID_1")));
     }
 
     // method get()

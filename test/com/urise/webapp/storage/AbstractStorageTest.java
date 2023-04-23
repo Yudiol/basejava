@@ -13,7 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractStorageTest {
-    final static String STORAGE_DIR = new String("C:/Project/Storage");
+    final static String STORAGE_DIR = "C:/Project/storage";
     private final ResumeTestData resumeTestData = new ResumeTestData();
     final AbstractStorage storage;
     final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");

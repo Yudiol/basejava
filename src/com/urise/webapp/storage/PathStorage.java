@@ -2,6 +2,7 @@ package com.urise.webapp.storage;
 
 import com.urise.webapp.exception.StorageException;
 import com.urise.webapp.model.Resume;
+import com.urise.webapp.storage.Serialization.SerializationStorage;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -12,12 +13,13 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class AbstractPathStorage extends AbstractStorage<Path> {
+public class PathStorage extends AbstractStorage<Path> {
     private final Path directory;
     private final SerializationStorage serializationStorage;
 
-    protected AbstractPathStorage(String dir, SerializationStorage serializationStorage) {
+    protected PathStorage(String dir, SerializationStorage serializationStorage) {
         directory = Paths.get(dir);
         this.serializationStorage = serializationStorage;
         Objects.requireNonNull(directory, "directory must not be null");
@@ -27,26 +29,18 @@ public class AbstractPathStorage extends AbstractStorage<Path> {
     }
 
     @Override
-    public void clearResume() throws IOException {
-        try {
-            Files.list(directory).forEach(this::deleteResume);
-        } catch (IOException e) {
-            throw new StorageException("Path delete error", "");
-        }
+    public void clearResume() {
+        getListFiles("Path delete error").forEach(this::deleteResume);
     }
 
     @Override
     public int sizeResume() {
-        try {
-            return (int) Files.list(directory).count();
-        } catch (IOException e) {
-            throw new StorageException("Something went wrong. Size", "");
-        }
+        return (int) getListFiles("Something went wrong. Size").count();
     }
 
     @Override
     protected Path getSearchKey(String uuid) {
-        return Paths.get(String.valueOf(directory), uuid);
+        return Paths.get(directory.resolve(uuid).toUri());
     }
 
     @Override
@@ -67,10 +61,10 @@ public class AbstractPathStorage extends AbstractStorage<Path> {
     protected void saveResume(Path path, Resume r) {
         try {
             Files.createFile(path);
-            updateResume(path, r);
         } catch (IOException e) {
             throw new StorageException("The " + path.getFileName() + " was not saved.", "");
         }
+        updateResume(path, r);
     }
 
     @Override
@@ -93,10 +87,14 @@ public class AbstractPathStorage extends AbstractStorage<Path> {
 
     @Override
     public List<Resume> getAll() {
+        return getListFiles("Directory read error").filter(Files::isRegularFile).map(this::getResume).collect(Collectors.toList());
+    }
+
+    private Stream<Path> getListFiles(String error) {
         try {
-            return Files.walk(directory).filter(Files::isRegularFile).map(this::getResume).collect(Collectors.toList());
+            return Files.list(directory);
         } catch (IOException e) {
-            throw new StorageException("Directory read error", "");
+            throw new StorageException(error, "");
         }
     }
 }

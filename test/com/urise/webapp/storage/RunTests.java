@@ -5,6 +5,6 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ArrayStorageTest.class, SortedArrayStorageTest.class, ListStorageTest.class, MapStorageTest.class,
-        MapResumeTest.class, ObjectStreamStorageTest.class, ObjectStreamStorageTest.class})
+        MapResumeTest.class, ObjectStreamFileStorageTest.class, ObjectStreamPathStorageTest.class})
 public class RunTests {
 }

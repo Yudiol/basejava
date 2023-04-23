@@ -3,12 +3,11 @@ package com.urise.webapp;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
 
 public class MainFiles {
     public static void main(String[] args) throws IOException {
         Path path = Paths.get(".\\src\\com\\urise\\webapp");
-        Files.walkFileTree(path, EnumSet.of(FileVisitOption.FOLLOW_LINKS), 2, new Visit());
+        Files.walkFileTree(path, new Visit());
     }
 
     static class Visit implements FileVisitor<Path> {

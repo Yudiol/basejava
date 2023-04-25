@@ -16,14 +16,14 @@ public class MainFiles {
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            System.out.println(str.repeat(counter) + dir.getFileName());
+//            System.out.println(str.repeat(counter) + dir.getFileName());
             counter++;
             return FileVisitResult.CONTINUE;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-            System.out.println("\t".repeat(counter) + file.getFileName());
+//            System.out.println("\t".repeat(counter) + file.getFileName());
             return FileVisitResult.CONTINUE;
         }
 

@@ -2,7 +2,7 @@ package com.urise.webapp.storage;
 
 import com.urise.webapp.exception.StorageException;
 import com.urise.webapp.model.Resume;
-import com.urise.webapp.storage.Serialization.SerializationStorage;
+import com.urise.webapp.storage.serializer.SerializationStorage;
 
 import java.io.*;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ public class FileStorage extends AbstractStorage<File> {
     private final File directory;
     private final SerializationStorage serializationStorage;
 
-    protected FileStorage(String dir, SerializationStorage serializationStorage) {
+    public FileStorage(String dir, SerializationStorage serializationStorage) {
         directory = new File(dir);
         this.serializationStorage = serializationStorage;
         Objects.requireNonNull(directory, "directory must not be null");

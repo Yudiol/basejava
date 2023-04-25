@@ -5,12 +5,20 @@ import java.util.List;
 import java.util.Objects;
 
 public class Organization implements Serializable {
-    private final Link homePage;
+    private Link homePage;
 
-    private final List<Period> posts;
+    private List<Period> posts;
+
+    public Organization() {
+    }
 
     public Organization(String name, String url, List<Period> posts) {
         this.homePage = new Link(name, url);
+        this.posts = posts;
+    }
+
+    public Organization(Link homePage, List<Period> posts) {
+        this.homePage = homePage;
         this.posts = posts;
     }
 

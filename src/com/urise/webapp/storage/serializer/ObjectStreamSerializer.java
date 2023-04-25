@@ -1,10 +1,10 @@
-package com.urise.webapp.storage.Serialization;
+package com.urise.webapp.storage.serializer;
 
 import com.urise.webapp.model.Resume;
 
 import java.io.*;
 
-public class ObjectStreamStorage implements SerializationStorage {
+public class ObjectStreamSerializer implements SerializationStorage {
     @Override
     public void doWrite(Resume resume, OutputStream os) throws IOException {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(os)) {

@@ -13,11 +13,16 @@ public class Organization implements Serializable {
     }
 
     public Organization(String name, String url, List<Period> posts) {
+        Objects.requireNonNull(name, "name must not be null");
+        Objects.requireNonNull(url, "url must not be null");
+        Objects.requireNonNull(posts, "posts must not be null");
         this.homePage = new Link(name, url);
         this.posts = posts;
     }
 
     public Organization(Link homePage, List<Period> posts) {
+        Objects.requireNonNull(homePage, "homePage must not be null");
+        Objects.requireNonNull(posts, "posts must not be null");
         this.homePage = homePage;
         this.posts = posts;
     }

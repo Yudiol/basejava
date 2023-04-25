@@ -7,7 +7,6 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -36,15 +35,19 @@ public class DataStreamSerializer implements SerializationStorage {
                 dos.writeUTF(className);
                 dos.writeUTF(sectionType.toString());
 
-                if (section instanceof TextSection) {
-                    writeTextSection(resume, dos, sectionType);
-                } else if (section instanceof ListSection) {
-                    writeListSection(resume, dos, sectionType);
-                } else if (section instanceof OrganizationSection) {
-                    writeOrganisationSection(resume, dos, sectionType);
-                } else {
-                    throw new StorageException("The exception was thrown while writing file. The class "
-                            + className + " didn't found. Check the list of section.", "");
+                switch (className) {
+                    case "TextSection":
+                        writeTextSection(resume, dos, sectionType);
+                        break;
+                    case "ListSection":
+                        writeListSection(resume, dos, sectionType);
+                        break;
+                    case "OrganizationSection":
+                        writeOrganisationSection(resume, dos, sectionType);
+                        break;
+                    default:
+                        throw new StorageException("The exception was thrown while writing file. The class "
+                                + className + " didn't found. Check the list of section.", "");
                 }
             }
         }
@@ -52,13 +55,7 @@ public class DataStreamSerializer implements SerializationStorage {
 
     @Override
     public Resume doRead(InputStream is) throws IOException {
-        List<String> sectionList = Arrays.asList(
-                "TextSection",
-                "ListSection",
-                "OrganizationSection");
-
         try (DataInputStream dis = new DataInputStream(is)) {
-
             Resume resume = new Resume(dis.readUTF(), dis.readUTF());
             int counter = dis.readInt();
             for (int i = 0; i < counter; i++) {
@@ -69,15 +66,20 @@ public class DataStreamSerializer implements SerializationStorage {
             for (int i = 0; i < counterSection; i++) {
                 String className = dis.readUTF();
                 SectionType sectionType = SectionType.valueOf(dis.readUTF());
-                if (sectionList.get(0).equalsIgnoreCase(className)) {
-                    readTextSection(resume, dis, sectionType);
-                } else if (sectionList.get(1).equalsIgnoreCase(className)) {
-                    readListSection(resume, dis, sectionType);
-                } else if (sectionList.get(2).equalsIgnoreCase(className)) {
-                    readOrganizationSection(resume, dis, sectionType);
-                } else {
-                    throw new StorageException("The exception was thrown while reading the file resume. The class "
-                            + className + " didn't found. Check an ArrayList named the sectionList into the 'doRead' method for matching Sections and the list.", "");
+
+                switch (className) {
+                    case "TextSection":
+                        readTextSection(resume, dis, sectionType);
+                        break;
+                    case "ListSection":
+                        readListSection(resume, dis, sectionType);
+                        break;
+                    case "OrganizationSection":
+                        readOrganizationSection(resume, dis, sectionType);
+                        break;
+                    default:
+                        throw new StorageException("The exception was thrown while reading the file resume. The class "
+                                + className + " didn't found.", "");
                 }
             }
             return resume;

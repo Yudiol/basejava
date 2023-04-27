@@ -1,55 +1,63 @@
 package com.urise.webapp.storage.serializer;
 
-import com.urise.webapp.exception.StorageException;
 import com.urise.webapp.model.*;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class DataStreamSerializer implements SerializationStorage {
     @Override
     public void doWrite(Resume resume, OutputStream os) throws IOException {
         try (DataOutputStream dos = new DataOutputStream(os)) {
-
             dos.writeUTF(resume.getUuid());
             dos.writeUTF(resume.getFullName());
 
-            Map<ContactType, String> contacts = resume.getContacts();
-            int counter = contacts.size();
-            dos.writeInt(counter);
+            writeWithException(resume.getContacts().keySet(), dos, (contactType) -> {
+                dos.writeUTF(contactType.toString());
+                dos.writeUTF(resume.getContact(contactType));
+            });
 
-            for (Map.Entry<ContactType, String> entry : contacts.entrySet()) {
-                dos.writeUTF(entry.getKey().name());
-                dos.writeUTF(entry.getValue());
-            }
-
-            dos.writeInt(resume.getSections().size());
-            for (Map.Entry<SectionType, Section> entry : resume.getSections().entrySet()) {
-                SectionType sectionType = entry.getKey();
-                Section section = entry.getValue();
-                String className = section.getClass().getSimpleName();
-                dos.writeUTF(className);
+            Writer<SectionType> writer = (sectionType) -> {
                 dos.writeUTF(sectionType.toString());
-
-                switch (className) {
-                    case "TextSection":
-                        writeTextSection(resume, dos, sectionType);
+                switch (sectionType) {
+                    case PERSONAL:
+                    case OBJECTIVE:
+                        dos.writeUTF(resume.getSection(sectionType).toString());
                         break;
-                    case "ListSection":
-                        writeListSection(resume, dos, sectionType);
+                    case ACHIEVEMENT:
+                    case QUALIFICATIONS:
+                        writeWithException(((ListSection) resume.getSection(sectionType)).getItems(), dos, dos::writeUTF);
                         break;
-                    case "OrganizationSection":
-                        writeOrganisationSection(resume, dos, sectionType);
+                    case EXPERIENCE:
+                    case EDUCATION:
+                        writeWithException(((OrganizationSection) resume.getSection(sectionType)).getOrganizations(), dos, (organizations) -> {
+                            dos.writeUTF(String.valueOf(organizations.getHomePage().getName()));
+                            dos.writeUTF(String.valueOf(organizations.getHomePage().getUrl()));
+                            writeWithException(organizations.getPosts(), dos, (org) -> {
+                                dos.writeUTF(org.getStartDate().toString());
+                                dos.writeUTF(org.getEndDate().toString());
+                                dos.writeUTF(org.getTitle());
+                                dos.writeUTF(org.getDescription());
+                            });
+                        });
                         break;
-                    default:
-                        throw new StorageException("The exception was thrown while writing file. The class "
-                                + className + " didn't found. Check the list of section.", "");
                 }
-            }
+            };
+            writeWithException(resume.getSections().keySet(), dos, writer);
+        }
+    }
+
+    interface Writer<T> {
+        void write(T t) throws IOException;
+    }
+
+    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos, Writer<T> writer) throws IOException {
+        dos.writeInt(collection.size());
+        for (T item : collection) {
+            writer.write(item);
         }
     }
 
@@ -57,96 +65,51 @@ public class DataStreamSerializer implements SerializationStorage {
     public Resume doRead(InputStream is) throws IOException {
         try (DataInputStream dis = new DataInputStream(is)) {
             Resume resume = new Resume(dis.readUTF(), dis.readUTF());
-            int counter = dis.readInt();
-            for (int i = 0; i < counter; i++) {
+
+            readWithException(dis, () -> {
                 resume.setContact(ContactType.valueOf(dis.readUTF()), dis.readUTF());
-            }
+                return null;
+            });
 
-            int counterSection = dis.readInt();
-            for (int i = 0; i < counterSection; i++) {
-                String className = dis.readUTF();
-                SectionType sectionType = SectionType.valueOf(dis.readUTF());
-
-                switch (className) {
-                    case "TextSection":
-                        readTextSection(resume, dis, sectionType);
-                        break;
-                    case "ListSection":
-                        readListSection(resume, dis, sectionType);
-                        break;
-                    case "OrganizationSection":
-                        readOrganizationSection(resume, dis, sectionType);
-                        break;
-                    default:
-                        throw new StorageException("The exception was thrown while reading the file resume. The class "
-                                + className + " didn't found.", "");
-                }
-            }
+            readWithException(dis, () -> {
+                        SectionType sectionType = SectionType.valueOf(dis.readUTF());
+                        switch (sectionType) {
+                            case PERSONAL:
+                            case OBJECTIVE:
+                                resume.setSection(sectionType, new TextSection(dis.readUTF()));
+                                break;
+                            case ACHIEVEMENT:
+                            case QUALIFICATIONS:
+                                resume.setSection(sectionType, new ListSection(readWithException(dis, dis::readUTF)));
+                                break;
+                            case EXPERIENCE:
+                            case EDUCATION:
+                                resume.setSection(sectionType, new OrganizationSection(readWithException(dis, () -> {
+                                    return (new Organization(new Link(dis.readUTF(), dis.readUTF()), readWithException(dis, () ->
+                                            {
+                                                return new Period(LocalDate.parse(dis.readUTF()), LocalDate.parse(dis.readUTF()), dis.readUTF(), dis.readUTF());
+                                            }
+                                    )));
+                                })));
+                                break;
+                        }
+                        return null;
+                    }
+            );
             return resume;
         }
     }
 
-    private void readTextSection(Resume resume, DataInputStream dis, SectionType sectionType) throws IOException {
-        resume.setSection(sectionType, new TextSection(dis.readUTF()));
+    interface Reader<T> {
+        T read() throws IOException;
     }
 
-    private void readListSection(Resume resume, DataInputStream dis, SectionType sectionType) throws IOException {
+    private <T> List<T> readWithException(DataInputStream dis, Reader<T> reader) throws IOException {
         int counter = dis.readInt();
-        List<String> listSection = new ArrayList<>();
+        List<T> list = new ArrayList<>();
         for (int i = 0; i < counter; i++) {
-            listSection.add(dis.readUTF());
+            list.add(reader.read());
         }
-        resume.setSection(sectionType, new ListSection(listSection));
-    }
-
-    private void readOrganizationSection(Resume resume, DataInputStream dis, SectionType sectionType) throws
-            IOException {
-        List<Organization> organizations = new ArrayList<>();
-        int counterOrganizations = dis.readInt();
-        for (int i = 0; i < counterOrganizations; i++) {
-            Link link = new Link(dis.readUTF(), dis.readUTF());
-            List<Period> periods = new ArrayList<>();
-            int counterPeriods = dis.readInt();
-            for (int j = 0; j < counterPeriods; j++) {
-                periods.add(new Period(LocalDate.parse(dis.readUTF()), LocalDate.parse(dis.readUTF()), dis.readUTF(), dis.readUTF()));
-            }
-            organizations.add(new Organization(link, periods));
-        }
-        resume.setSection(sectionType, new OrganizationSection(organizations));
-    }
-
-
-    private void writeOrganisationSection(Resume resume, DataOutputStream dos, SectionType sectionType) throws
-            IOException {
-        List<Organization> organizations = ((OrganizationSection) resume.getSection(sectionType)).getOrganizations();
-        int counterOrganizations = organizations.size();
-        dos.writeInt(counterOrganizations);
-        for (int i = 0; i < counterOrganizations; i++) {
-            dos.writeUTF(String.valueOf(organizations.get(i).getHomePage().getName()));
-            dos.writeUTF(String.valueOf(organizations.get(i).getHomePage().getUrl()));
-            List<Period> periods = organizations.get(i).getPosts();
-            int counterPeriods = periods.size();
-            dos.writeInt(counterPeriods);
-            for (int j = 0; j < counterPeriods; j++) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                dos.writeUTF(periods.get(j).getStartDate().format(formatter));
-                dos.writeUTF(periods.get(j).getEndDate().format(formatter));
-                dos.writeUTF(periods.get(j).getTitle());
-                dos.writeUTF(periods.get(j).getDescription());
-            }
-        }
-    }
-
-    private void writeListSection(Resume resume, DataOutputStream dos, SectionType sectionType) throws IOException {
-        List<String> listSection = ((ListSection) resume.getSection(sectionType)).getItems();
-        int counter = listSection.size();
-        dos.writeInt(counter);
-        for (int i = 0; i < counter; i++) {
-            dos.writeUTF(listSection.get(i));
-        }
-    }
-
-    private void writeTextSection(Resume resume, DataOutputStream dos, SectionType sectionType) throws IOException {
-        dos.writeUTF(resume.getSection(sectionType).toString());
+        return list;
     }
 }

@@ -1,8 +1,11 @@
 package com.urise.webapp.model;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 import java.util.Objects;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Link implements Serializable {
     private String name;
     private String url;
@@ -30,7 +33,7 @@ public class Link implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Link link = (Link) o;
-        return name.equals(link.name) && Objects.equals(url, link.url);
+        return Objects.equals(name, link.name) && Objects.equals(url, link.url);
     }
 
     @Override

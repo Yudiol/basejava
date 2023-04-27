@@ -23,7 +23,7 @@ public class ListSection extends Section {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ListSection that = (ListSection) o;
-        return items.equals(that.items);
+        return Objects.equals(items, that.items);
     }
 
     @Override

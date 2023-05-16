@@ -2,6 +2,7 @@ package com.urise.webapp;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HW12 {
@@ -9,7 +10,7 @@ public class HW12 {
         System.out.println(minValueMySolution(new int[]{6, 1, 2, 3, 4, 5, 5}));
         System.out.println(minValueAnotherManSolution(new int[]{6, 1, 2, 3, 4, 5, 5}));
         System.out.println(minValueConvertToString(new int[]{9, 8, 8, 9}));
-        System.out.println(oddOrEven(Arrays.asList(1, 1,1, 2, 2)));
+        System.out.println(oddOrEven(Arrays.asList(1, 1, 1, 2, 2)));
     }
 
     static int minValueMySolution(int[] values) {
@@ -27,8 +28,7 @@ public class HW12 {
         return Arrays.stream(values)
                 .distinct()
                 .sorted()
-                .reduce((a, e) -> a * 10 + e)
-                .orElse(0);
+                .reduce(0, (a, e) -> a * 10 + e);
     }
 
     static int minValueConvertToString(int[] values) {
@@ -36,13 +36,8 @@ public class HW12 {
     }
 
     static List<Integer> oddOrEven(List<Integer> integers) {
-//        boolean b = integers.stream().reduce(Integer::sum).map(e -> e % 2 == 0).orElse(false);
-//        return integers.stream().collect(Collectors.groupingBy(el -> el % 2 == 0)).get(!b);
-        return integers.stream()
-                .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        e -> {
-                            return e.stream().collect(Collectors.groupingBy(el -> el % 2 == 1))
-                                    .get(e.stream().reduce(Integer::sum).orElse(0) % 2 == 0);
-                        }));
+        final Map<Boolean, List<Integer>> map = integers.stream()
+                .collect(Collectors.groupingBy(i -> i % 2 == 0));
+        return map.get(map.get(false).size() % 2 != 0);
     }
 }

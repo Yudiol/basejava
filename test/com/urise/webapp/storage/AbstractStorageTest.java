@@ -1,5 +1,6 @@
 package com.urise.webapp.storage;
 
+import com.urise.webapp.Config;
 import com.urise.webapp.exception.ExistStorageException;
 import com.urise.webapp.exception.NotExistStorageException;
 import com.urise.webapp.model.Resume;
@@ -8,28 +9,33 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractStorageTest {
-    final static String STORAGE_DIR = "C:/Project/storage";
+    final static String STORAGE_DIR = Config.get().getSTORAGE_DIR();
     private final ResumeTestData resumeTestData = new ResumeTestData();
-    final AbstractStorage storage;
-    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
-    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
-    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
-    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
+    final Storage storage;
+//    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
+    final Resume r1 = new Resume("UUID_1", "Григорий Кислин");
+//    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
+    final Resume r2 = new Resume("UUID_2", "Ivan Ivanov");
+//    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
+    final Resume r3 = new Resume("UUID_3", "Petr Petrov");
+//    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
+    final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, SQLException {
         storage.clear();
         storage.save(r1);
         storage.save(r2);
         storage.save(r3);
     }
 
-    public AbstractStorageTest( AbstractStorage storage) {
+    public AbstractStorageTest( Storage storage) {
         this.storage = storage;
     }
 
@@ -45,7 +51,7 @@ public abstract class AbstractStorageTest {
 
     // method clear()
     @Test
-    public void clear() throws IOException {
+    public void clear() throws IOException, SQLException {
         storage.clear();
         assertSize(0);
     }
@@ -58,7 +64,8 @@ public abstract class AbstractStorageTest {
 
     @Test
     public void update() {
-        Resume resume = resumeTestData.createResume("UUID_1", "1");
+//        Resume resume = resumeTestData.createResume("UUID_1", "1");
+        Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
         Assert.assertTrue(resume.equals(storage.get("UUID_1")));
     }

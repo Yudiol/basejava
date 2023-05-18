@@ -18,13 +18,13 @@ public abstract class AbstractStorageTest {
     final static String STORAGE_DIR = Config.get().getSTORAGE_DIR();
     private final ResumeTestData resumeTestData = new ResumeTestData();
     final Storage storage;
-//    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
+    //    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
     final Resume r1 = new Resume("UUID_1", "Григорий Кислин");
-//    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
+    //    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
     final Resume r2 = new Resume("UUID_2", "Ivan Ivanov");
-//    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
+    //    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
     final Resume r3 = new Resume("UUID_3", "Petr Petrov");
-//    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
+    //    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
     final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
 
     @Before
@@ -35,7 +35,7 @@ public abstract class AbstractStorageTest {
         storage.save(r3);
     }
 
-    public AbstractStorageTest( Storage storage) {
+    public AbstractStorageTest(Storage storage) {
         this.storage = storage;
     }
 
@@ -111,8 +111,7 @@ public abstract class AbstractStorageTest {
 
     @Test(expected = NotExistStorageException.class)
     public void deleteNotExist() {
-        storage.delete(r1.getUuid());
-        assertGet(r1);
+        storage.delete("dummy");
     }
 
     void assertGet(Resume resume) {

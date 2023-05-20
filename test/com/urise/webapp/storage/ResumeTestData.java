@@ -9,7 +9,7 @@ public class ResumeTestData {
     public Resume createResume(String uuid, String fullName) {
         Resume resume = new Resume(uuid, fullName);
         getContact(resume, listContacts());
-        getSection(resume, listSections());
+//        getSection(resume, listSections());
         return resume;
     }
 

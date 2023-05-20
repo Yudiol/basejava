@@ -18,14 +18,14 @@ public abstract class AbstractStorageTest {
     final static String STORAGE_DIR = Config.get().getSTORAGE_DIR();
     private final ResumeTestData resumeTestData = new ResumeTestData();
     final Storage storage;
-    //    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
-    final Resume r1 = new Resume("UUID_1", "Григорий Кислин");
-    //    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
-    final Resume r2 = new Resume("UUID_2", "Ivan Ivanov");
-    //    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
-    final Resume r3 = new Resume("UUID_3", "Petr Petrov");
-    //    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
-    final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
+    final Resume r1 = resumeTestData.createResume("UUID_1", "Григорий Кислин");
+    //    final Resume r1 = new Resume("UUID_1", "Григорий Кислин");
+    final Resume r2 = resumeTestData.createResume("UUID_2", "Ivan Ivanov");
+    //    final Resume r2 = new Resume("UUID_2", "Ivan Ivanov");
+    final Resume r3 = resumeTestData.createResume("UUID_3", "Petr Petrov");
+    //    final Resume r3 = new Resume("UUID_3", "Petr Petrov");
+    final Resume r4 = resumeTestData.createResume("UUID_NOT_EXIST", "4");
+//    final Resume r4 = new Resume("UUID_NOT_EXIST", "4");
 
     @Before
     public void setUp() throws IOException, SQLException {
@@ -40,7 +40,7 @@ public abstract class AbstractStorageTest {
     }
 
     @Test
-    public void getAllSorted() {
+    public void getAllSorted() throws SQLException {
         List<Resume> resumes = new ArrayList<>();
         resumes.add(r3);
         resumes.add(r2);
@@ -58,16 +58,16 @@ public abstract class AbstractStorageTest {
 
     //method update()
     @Test(expected = NotExistStorageException.class)
-    public void updateNotExist() {
+    public void updateNotExist() throws SQLException {
         storage.update(r4);
     }
 
     @Test
-    public void update() {
-//        Resume resume = resumeTestData.createResume("UUID_1", "1");
-        Resume resume = new Resume("UUID_1", "1");
+    public void update() throws SQLException {
+        Resume resume = resumeTestData.createResume("UUID_1", "1");
+//        Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
-        Assert.assertTrue(resume.equals(storage.get("UUID_1")));
+        Assert.assertEquals(resume, storage.get("UUID_1"));
     }
 
     // method get()
@@ -85,14 +85,14 @@ public abstract class AbstractStorageTest {
 
     // method save()
     @Test
-    public void save() {
+    public void save() throws SQLException {
         storage.save(r4);
         assertGet(r4);
         assertSize(4);
     }
 
     @Test(expected = ExistStorageException.class)
-    public void saveExist() {
+    public void saveExist() throws SQLException {
         storage.save(r1);
     }
 

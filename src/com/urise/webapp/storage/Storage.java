@@ -10,15 +10,15 @@ public interface Storage {
 
     void clear() throws IOException, SQLException;
 
-    void update(Resume r);
+    void update(Resume r) throws SQLException;
 
-    void save(Resume r);
+    void save(Resume r) throws SQLException;
 
     Resume get(String uuid);
 
     void delete(String uuid);
 
-    List<Resume> getAllSorted();
+    List<Resume> getAllSorted() throws SQLException;
 
     int size();
 }

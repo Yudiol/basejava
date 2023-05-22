@@ -3,6 +3,7 @@ package com.urise.webapp.storage;
 import com.urise.webapp.Config;
 import com.urise.webapp.exception.ExistStorageException;
 import com.urise.webapp.exception.NotExistStorageException;
+import com.urise.webapp.model.ContactType;
 import com.urise.webapp.model.Resume;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,6 +66,8 @@ public abstract class AbstractStorageTest {
     @Test
     public void update() throws SQLException {
         Resume resume = resumeTestData.createResume("UUID_1", "1");
+        resume.setContact(ContactType.GITHUB,"QWERTY");
+        resume.setContact(ContactType.HOME_PHONE,"HOME_PHONE");
 //        Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
         Assert.assertEquals(resume, storage.get("UUID_1"));

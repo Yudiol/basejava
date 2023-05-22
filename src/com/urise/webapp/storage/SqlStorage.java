@@ -6,11 +6,12 @@ import com.urise.webapp.model.Resume;
 import com.urise.webapp.sql.SqlHelper;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class SqlStorage implements Storage {
     private static Logger LOG = Logger.getLogger(AbstractStorage.class.getName());
@@ -91,24 +92,27 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         LOG.info("GetAllSorted");
-        List<Resume> resumes = new ArrayList<>();
+        Map<String, Resume> resumes = new HashMap<>();
         return sqlHelper.transactionExecute(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("  SELECT * FROM resume " +
                                                                                "ORDER BY full_name ");
-                 PreparedStatement contacts = connection.prepareStatement("SELECT * FROM contact")) {
+            ) {
                 ResultSet resultSet = statement.executeQuery();
-                ResultSet resContact = contacts.executeQuery();
                 while (resultSet.next()) {
-                    resumes.add(new Resume(resultSet.getString("uuid"), resultSet.getString("full_name")));
-                }
-                while (resContact.next()) {
-                    String uuid = resContact.getString("resume_uuid");
-                    resumes.stream().filter(res -> Objects.equals(res.getUuid(), uuid))
-                            .findFirst().orElse(null)
-                            .setContact(ContactType.valueOf(resContact.getString("type")), resContact.getString("value"));
+                    String uuid = resultSet.getString("uuid");
+                    resumes.put(uuid, new Resume(uuid, resultSet.getString("full_name")));
                 }
             }
-            return resumes;
+            try (PreparedStatement contacts = connection.prepareStatement("SELECT * FROM contact")) {
+                ResultSet resContact = contacts.executeQuery();
+                while (resContact.next()) {
+                    String uuid = resContact.getString("resume_uuid");
+                    resumes.get(uuid).setContact(ContactType.valueOf(resContact.getString("type")), resContact.getString("value"));
+                }
+            }
+            return resumes.values().stream()
+                    .sorted(Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid))
+                    .collect(Collectors.toList());
         });
     }
 

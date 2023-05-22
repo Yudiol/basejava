@@ -94,13 +94,13 @@ public class SqlStorage implements Storage {
         LOG.info("GetAllSorted");
         Map<String, Resume> resumes = new HashMap<>();
         return sqlHelper.transactionExecute(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("  SELECT * FROM resume " +
-                                                                               "ORDER BY full_name ");
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM resume");
             ) {
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     String uuid = resultSet.getString("uuid");
                     resumes.put(uuid, new Resume(uuid, resultSet.getString("full_name")));
+                    System.out.println(uuid);
                 }
             }
             try (PreparedStatement contacts = connection.prepareStatement("SELECT * FROM contact")) {
@@ -110,6 +110,7 @@ public class SqlStorage implements Storage {
                     resumes.get(uuid).setContact(ContactType.valueOf(resContact.getString("type")), resContact.getString("value"));
                 }
             }
+            resumes.entrySet().stream().forEach(System.out::println);
             return resumes.values().stream()
                     .sorted(Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid))
                     .collect(Collectors.toList());

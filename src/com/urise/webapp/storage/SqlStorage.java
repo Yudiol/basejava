@@ -6,12 +6,11 @@ import com.urise.webapp.model.Resume;
 import com.urise.webapp.sql.SqlHelper;
 
 import java.sql.*;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class SqlStorage implements Storage {
     private static Logger LOG = Logger.getLogger(AbstractStorage.class.getName());
@@ -31,15 +30,21 @@ public class SqlStorage implements Storage {
     public void update(Resume resume) {
         LOG.info("Update " + resume);
         sqlHelper.transactionExecute(connection -> {
-            saveUpdate(connection, resume, "UPDATE resume " +
-                                                "   SET full_name = ? " +
-                                                " WHERE uuid = ? ");
+            try (PreparedStatement statement = connection.prepareStatement("UPDATE resume " +
+                                                                               "   SET full_name = ? " +
+                                                                               " WHERE uuid = ? ")) {
+                statement.setString(1, resume.getFullName());
+                statement.setString(2, resume.getUuid());
+                if (statement.executeUpdate() == 0) {
+                    throw new NotExistStorageException(resume.getUuid());
+                }
+            }
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM resume " +
                                                                                " WHERE uuid = ? ")) {
                 statement.setString(1, resume.getFullName());
                 statement.executeUpdate();
             }
-            saveResume(connection, resume);
+            insertContact(connection, resume);
             return null;
         });
     }
@@ -48,9 +53,13 @@ public class SqlStorage implements Storage {
     public void save(Resume resume) {
         LOG.info("Save " + resume);
         sqlHelper.transactionExecute(connection -> {
-            saveUpdate(connection, resume, "INSERT INTO resume (full_name, uuid) " +
-                                                "VALUES (?, ?) ");
-            saveResume(connection, resume);
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO resume (full_name, uuid) " +
+                                                                               "VALUES (?, ?) ")) {
+                statement.setString(1, resume.getFullName());
+                statement.setString(2, resume.getUuid());
+                statement.execute();
+            }
+            insertContact(connection, resume);
             return null;
         });
     }
@@ -92,15 +101,15 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         LOG.info("GetAllSorted");
-        Map<String, Resume> resumes = new HashMap<>();
+        Map<String, Resume> resumes = new LinkedHashMap<>();
         return sqlHelper.transactionExecute(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM resume");
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM resume " +
+                                                                               "ORDER BY full_name");
             ) {
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     String uuid = resultSet.getString("uuid");
                     resumes.put(uuid, new Resume(uuid, resultSet.getString("full_name")));
-                    System.out.println(uuid);
                 }
             }
             try (PreparedStatement contacts = connection.prepareStatement("SELECT * FROM contact")) {
@@ -110,10 +119,7 @@ public class SqlStorage implements Storage {
                     resumes.get(uuid).setContact(ContactType.valueOf(resContact.getString("type")), resContact.getString("value"));
                 }
             }
-            resumes.entrySet().stream().forEach(System.out::println);
-            return resumes.values().stream()
-                    .sorted(Comparator.comparing(Resume::getFullName).thenComparing(Resume::getUuid))
-                    .collect(Collectors.toList());
+            return new ArrayList<>(resumes.values());
         });
     }
 
@@ -127,17 +133,7 @@ public class SqlStorage implements Storage {
         });
     }
 
-    public void saveUpdate(Connection connection, Resume resume, String sql1) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(sql1)) {
-            statement.setString(1, resume.getFullName());
-            statement.setString(2, resume.getUuid());
-            if (statement.executeUpdate() == 0) {
-                throw new NotExistStorageException(resume.getUuid());
-            }
-        }
-    }
-
-    public void saveResume(Connection connection, Resume resume) throws SQLException {
+    public void insertContact(Connection connection, Resume resume) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO contact (type, value, resume_uuid) " +
                                                                            "VALUES (?, ?, ?) ")) {
             for (Map.Entry<ContactType, String> map : resume.getContacts().entrySet()) {

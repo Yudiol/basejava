@@ -5,6 +5,8 @@ import com.urise.webapp.exception.ExistStorageException;
 import com.urise.webapp.exception.NotExistStorageException;
 import com.urise.webapp.model.ContactType;
 import com.urise.webapp.model.Resume;
+import com.urise.webapp.model.SectionType;
+import com.urise.webapp.model.TextSection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +70,7 @@ public abstract class AbstractStorageTest {
         Resume resume = resumeTestData.createResume("UUID_1", "1");
         resume.setContact(ContactType.GITHUB,"QWERTY");
         resume.setContact(ContactType.HOME_PHONE,"HOME_PHONE");
+        resume.setSection(SectionType.PERSONAL,new TextSection("PERSONAL"));
 //        Resume resume = new Resume("UUID_1", "1");
         storage.update(resume);
         Assert.assertEquals(resume, storage.get("UUID_1"));

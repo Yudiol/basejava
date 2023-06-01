@@ -1,24 +1,22 @@
 package com.urise.webapp.web;
 
 import com.urise.webapp.Config;
-import com.urise.webapp.model.Resume;
+import com.urise.webapp.model.*;
 import com.urise.webapp.storage.Storage;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-
+import java.util.Collections;
 
 public class ResumeServlet extends HttpServlet {
-    private static Storage storage;
 
+    private Storage storage; // = Config.get().getStorage();
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
+    public void init() throws ServletException {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -27,26 +25,88 @@ public class ResumeServlet extends HttpServlet {
         storage = Config.get().getStorage();
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
-        response.getWriter().write("<html><body><table border=1><tr><th>UUID</th><th>FullName</th></tr>");
-        try {
-            for (Resume resume : storage.getAllSorted()) {
-                response.getWriter().write("<tr><td>" + resume.getUuid() + "</td><td>" + resume.getFullName() + "</td></tr>");
+        String action = request.getParameter("action");
+        String uuid = request.getParameter("uuid");
+        String fullName = request.getParameter("fullName");
+        if (fullName.trim().equals("")) {
+            if (!action.equals("new")) {
+                storage.delete(uuid);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            response.sendRedirect("resume");
+            return;
         }
-        response.getWriter().write("</table></body></html>");
-
+        Resume r = new Resume(uuid, fullName);
+        r.setFullName(fullName);
+        for (ContactType type : ContactType.values()) {
+            String value = request.getParameter(type.name());
+            if (value != null && value.trim().length() != 0) {
+                r.setContact(type, value);
+            } else {
+                r.getContacts().remove(type);
+            }
+        }
+        for (SectionType type : SectionType.values()) {
+            String value = request.getParameter(type.name());
+            if (value != null && value.trim().length() != 0) {
+                switch (type) {
+                    case PERSONAL:
+                    case OBJECTIVE:
+                        r.setSection(type, new TextSection(value));
+                        break;
+                    case ACHIEVEMENT:
+                    case QUALIFICATIONS:
+                        r.setSection(type, new ListSection(Collections.singletonList(value)));
+                        break;
+                    case EXPERIENCE:
+                    case EDUCATION:
+                        break;
+                }
+            } else {
+                r.getSections().remove(type);
+            }
+        }
+        if (action.equals("new")) {
+            storage.save(r);
+        } else {
+            storage.update(r);
+        }
+        response.sendRedirect("resume");
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws javax.servlet.ServletException, IOException {
 
+        String uuid = request.getParameter("uuid");
+        String action = request.getParameter("action");
+        if (action == null) {
+            request.setAttribute("resumes", storage.getAllSorted());
+            request.getRequestDispatcher("/WEB-INF/jsp/list.jsp").forward(request, response);
+            return;
+        }
+        Resume r;
+        switch (action) {
+            case "delete":
+                storage.delete(uuid);
+                response.sendRedirect("resume");
+                return;
+            case "view":
+            case "edit":
+                r = storage.get(uuid);
+                break;
+            case "new":
+                r = new Resume("");
+                request.setAttribute("action", "new");
+                action = "edit";
+                break;
+            default:
+                throw new IllegalArgumentException("Action " + action + " is illegal");
+        }
+        request.setAttribute("sections", r.getSections().size() == 0 ? "" : "Секции :");
+        request.setAttribute("contacts", r.getContacts().size() == 0 ? "" : "Контакты :");
+        request.setAttribute("resume", r);
+        request.getRequestDispatcher(
+                ("view".equals(action) ? "/WEB-INF/jsp/view.jsp" : "/WEB-INF/jsp/edit.jsp")
+        ).forward(request, response);
     }
 }

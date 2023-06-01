@@ -35,8 +35,8 @@ public class SqlStorage implements Storage {
                     throw new NotExistStorageException(resume.getUuid());
                 }
             }
-            deleteItems(connection, resume.getUuid(), "resume_uuid","contact");
-            deleteItems(connection, resume.getUuid(), "resume_uuid","section");
+            deleteItems(connection, resume.getUuid(), "contact");
+            deleteItems(connection, resume.getUuid(),"section");
             insertContacts(connection, resume);
             insertSections(connection, resume);
             return null;
@@ -63,9 +63,13 @@ public class SqlStorage implements Storage {
     public void delete(String uuid) {
         LOG.info("Delete " + uuid);
         sqlHelper.transactionExecute(connection -> {
-            deleteItems(connection, uuid, "uuid","resume");
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM resume WHERE uuid = ? ")) {
+                statement.setString(1, uuid);
+            if (statement.executeUpdate() == 0) {
+                throw new NotExistStorageException(uuid);
+            }
             return null;
-        });
+        }});
     }
 
     @Override
@@ -73,21 +77,21 @@ public class SqlStorage implements Storage {
         LOG.info("Get " + uuid);
         return sqlHelper.transactionExecute(connection -> {
 //          add full_name  
-            Resume resume = sqlHelper.addItems(connection,  uuid,"uuid","resume", resultSet -> {
+            Resume resume = sqlHelper.addItems(connection, uuid, "uuid", "resume", resultSet -> {
                 if (!resultSet.next()) {
                     throw new NotExistStorageException(uuid);
                 }
                 return new Resume(uuid, resultSet.getString("full_name"));
             });
 //          add contacts  
-            sqlHelper.addItems(connection,  uuid,"resume_uuid","contact", resultSet -> {
+            sqlHelper.addItems(connection, uuid, "resume_uuid", "contact", resultSet -> {
                 while (resultSet.next()) {
                     resume.setContact(ContactType.valueOf(resultSet.getString("type")), resultSet.getString("value"));
                 }
                 return null;
             });
 //          add sections  
-            sqlHelper.addItems(connection,  uuid,"resume_uuid","section", resultSet -> {
+            sqlHelper.addItems(connection, uuid, "resume_uuid", "section", resultSet -> {
                 while (resultSet.next()) {
                     getSections(resultSet, resume);
                 }
@@ -104,7 +108,7 @@ public class SqlStorage implements Storage {
         return sqlHelper.transactionExecute(connection -> {
 //          add all full_name  
             sqlHelper.addAllItems(connection, "  SELECT * FROM resume " +
-                                                  "ORDER BY full_name", res -> {
+                    "ORDER BY full_name", res -> {
                 String uuid = res.getString("uuid");
                 resumes.put(uuid, new Resume(uuid, res.getString("full_name")));
             });
@@ -124,7 +128,7 @@ public class SqlStorage implements Storage {
     public int size() {
         LOG.info("Size");
         return sqlHelper.execute("SELECT count(*) " +
-                                     "  FROM resume", statement -> {
+                "  FROM resume", statement -> {
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
             return resultSet.getInt("count");
@@ -133,7 +137,7 @@ public class SqlStorage implements Storage {
 
     public void insertContacts(Connection connection, Resume resume) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO contact (type, value, resume_uuid) " +
-                "VALUES (?, ?, ?) ")) {
+                                                                           "VALUES (?, ?, ?) ")) {
             for (Map.Entry<ContactType, String> map : resume.getContacts().entrySet()) {
                 statement.setString(1, String.valueOf(map.getKey()));
                 statement.setString(2, map.getValue());
@@ -146,10 +150,23 @@ public class SqlStorage implements Storage {
 
     public void insertSections(Connection connection, Resume resume) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO section (type, title, resume_uuid) " +
-                "VALUES (?, ?, ?) ")) {
+                                                                           "VALUES (?, ?, ?) ")) {
             for (Map.Entry<SectionType, Section> map : resume.getSections().entrySet()) {
-                Section section = map.getValue();
-                String title = section instanceof ListSection ? String.join("\n", ((ListSection) section).getItems()): section.toString();
+                SectionType sectionType = map.getKey();
+                String title = null;
+                switch (sectionType) {
+                    case PERSONAL:
+                    case OBJECTIVE:
+                        title = String.valueOf(map.getValue());
+                        break;
+                    case ACHIEVEMENT:
+                    case QUALIFICATIONS:
+                        title = String.join("\n", ((ListSection) map.getValue()).getItems());
+                        break;
+                    case EXPERIENCE:
+                    case EDUCATION:
+                        break;
+                }
                 statement.setString(1, String.valueOf(map.getKey()));
                 statement.setString(2, title);
                 statement.setString(3, resume.getUuid());
@@ -159,13 +176,10 @@ public class SqlStorage implements Storage {
         }
     }
 
-    private void deleteItems(Connection connection, String uuid, String id,String table) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement("DELETE FROM " +table +
-                                                                           " WHERE " + id + " = ? ")) {
+    private void deleteItems(Connection connection, String uuid, String table) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("DELETE FROM " + table + " WHERE resume_uuid =?")) {
             statement.setString(1, uuid);
-            if (statement.executeUpdate() == 0) {
-                throw new NotExistStorageException(uuid);
-            }
+            statement.executeUpdate();
         }
     }
 

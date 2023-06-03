@@ -20,7 +20,7 @@
         <table>
             <tr>
                 <td>Имя:</td>
-                <td><input type="text" name="fullName" size=50 value="${resume.fullName}">
+                <td><input type="text" pattern="[\w\s]+" required placeholder="ФИО" name="fullName" size=50 value="${resume.fullName}">
                 </td>
             </tr>
             <tr>

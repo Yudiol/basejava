@@ -9,7 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ResumeServlet extends HttpServlet {
 
@@ -30,13 +31,6 @@ public class ResumeServlet extends HttpServlet {
         String action = request.getParameter("action");
         String uuid = request.getParameter("uuid");
         String fullName = request.getParameter("fullName");
-        if (fullName.trim().equals("")) {
-            if (!action.equals("new")) {
-                storage.delete(uuid);
-            }
-            response.sendRedirect("resume");
-            return;
-        }
         Resume r = new Resume(uuid, fullName);
         r.setFullName(fullName);
         for (ContactType type : ContactType.values()) {
@@ -57,7 +51,8 @@ public class ResumeServlet extends HttpServlet {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        r.setSection(type, new ListSection(Collections.singletonList(value)));
+                        r.setSection(type, new ListSection(Arrays.stream(value.split("\n"))
+                                .map(String::trim).filter(e->e.matches("[\\w]+")).collect(Collectors.toList())));
                         break;
                     case EXPERIENCE:
                     case EDUCATION:

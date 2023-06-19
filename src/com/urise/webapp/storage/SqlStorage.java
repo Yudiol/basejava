@@ -5,6 +5,8 @@ import com.urise.webapp.model.*;
 import com.urise.webapp.sql.SqlHelper;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -27,8 +29,8 @@ public class SqlStorage implements Storage {
         LOG.info("Update " + resume);
         sqlHelper.transactionExecute(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("UPDATE resume " +
-                                                                               "   SET full_name = ? " +
-                                                                               " WHERE uuid = ? ")) {
+                    "   SET full_name = ? " +
+                    " WHERE uuid = ? ")) {
                 statement.setString(1, resume.getFullName());
                 statement.setString(2, resume.getUuid());
                 if (statement.executeUpdate() == 0) {
@@ -36,7 +38,7 @@ public class SqlStorage implements Storage {
                 }
             }
             deleteItems(connection, resume.getUuid(), "contact");
-            deleteItems(connection, resume.getUuid(),"section");
+            deleteItems(connection, resume.getUuid(), "section");
             insertContacts(connection, resume);
             insertSections(connection, resume);
             return null;
@@ -65,11 +67,12 @@ public class SqlStorage implements Storage {
         sqlHelper.transactionExecute(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM resume WHERE uuid = ? ")) {
                 statement.setString(1, uuid);
-            if (statement.executeUpdate() == 0) {
-                throw new NotExistStorageException(uuid);
+                if (statement.executeUpdate() == 0) {
+                    throw new NotExistStorageException(uuid);
+                }
+                return null;
             }
-            return null;
-        }});
+        });
     }
 
     @Override
@@ -137,7 +140,7 @@ public class SqlStorage implements Storage {
 
     public void insertContacts(Connection connection, Resume resume) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO contact (type, value, resume_uuid) " +
-                                                                           "VALUES (?, ?, ?) ")) {
+                "VALUES (?, ?, ?) ")) {
             for (Map.Entry<ContactType, String> map : resume.getContacts().entrySet()) {
                 statement.setString(1, String.valueOf(map.getKey()));
                 statement.setString(2, map.getValue());
@@ -150,25 +153,42 @@ public class SqlStorage implements Storage {
 
     public void insertSections(Connection connection, Resume resume) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO section (type, title, resume_uuid) " +
-                                                                           "VALUES (?, ?, ?) ")) {
+                "VALUES (?, ?, ?) ")) {
             for (Map.Entry<SectionType, Section> map : resume.getSections().entrySet()) {
                 SectionType sectionType = map.getKey();
-                String title = null;
+                StringBuilder title = new StringBuilder();
                 switch (sectionType) {
                     case PERSONAL:
                     case OBJECTIVE:
-                        title = String.valueOf(map.getValue());
+                        title.append(map.getValue());
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        title = String.join("\n", ((ListSection) map.getValue()).getItems());
+                        title.append(String.join("\n", ((ListSection) map.getValue()).getItems()));
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
+                        for (Organization organization : ((OrganizationSection) map.getValue()).getOrganizations()) {
+                            title.append('\u2207');
+                            title.append('\u2021');
+                            title.append(organization.getHomePage().getName());
+                            title.append('\u2021');
+                            title.append(organization.getHomePage().getUrl());
+                            for (Period period : organization.getPosts()) {
+                                title.append('\u2021');
+                                title.append(period.getStartDate().toString());
+                                title.append('\u2021');
+                                title.append(period.getEndDate().toString());
+                                title.append('\u2021');
+                                title.append(period.getTitle());
+                                title.append('\u2021');
+                                title.append(period.getDescription());
+                            }
+                        }
                         break;
                 }
                 statement.setString(1, String.valueOf(map.getKey()));
-                statement.setString(2, title);
+                statement.setString(2, String.valueOf(title));
                 statement.setString(3, resume.getUuid());
                 statement.addBatch();
             }
@@ -197,7 +217,32 @@ public class SqlStorage implements Storage {
                 break;
             case EXPERIENCE:
             case EDUCATION:
+                List<Organization> organizations = new ArrayList<>();
+                for (String org : title.split("∇")) {
+                    List<Period> periods = new ArrayList<>();
+                    if (Objects.equals(org, "")) {
+                        continue;
+                    }
+                    String[] organisation = org.split("‡");
+                    int counter = 0;
+                    for (int k = 3; k < organisation.length; k += 4) {
+                        String start = organisation[3 + (4 * counter)];
+                        String end = organisation[4 + (4 * counter)];
+                        String position = organisation[5 + (4 * counter)];
+                        String description = organisation[6 + (4 * counter)];
+                        counter++;
+                        periods.add(new Period(convertStringToLocalDate(start), convertStringToLocalDate(end), position, description));
+                    }
+                    organizations.add(new Organization(organisation[1], organisation[2], periods));
+                }
+                resume.setSection(sectionType, new OrganizationSection(organizations));
                 break;
         }
+    }
+
+    private LocalDate convertStringToLocalDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(date, formatter);
+
     }
 }

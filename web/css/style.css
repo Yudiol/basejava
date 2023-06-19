@@ -13,5 +13,25 @@ footer {
     margin: 20px 0;
 }
 
+textarea::-webkit-scrollbar {
+    width: 0px
+}
+
+table {
+    width: 100%; /* Ширина таблицы */
+}
+
+td {
+    padding: 5px; /* Поля в ячейках */
+    vertical-align: top; /* Выравнивание по верхнему краю ячеек */
+}
+
+.col1 {
+    background: #ccc;
+}
+
+.col2 {
+    background: #ffd;
+}
 
 

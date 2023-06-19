@@ -1,9 +1,5 @@
 <%@ page import="com.urise.webapp.model.SectionType" %>
-<%@ page import="java.util.Objects" %>
-<%@ page import="com.urise.webapp.model.ListSection" %>
-<%@ page import="java.util.Map" %>
-<%@ page import="com.urise.webapp.model.Section" %>
-<%@ page import="java.util.stream.Collectors" %>
+<%@ page import="com.urise.webapp.model.OrganizationSection" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
@@ -27,14 +23,38 @@
     </p>
     <h3>${sections}</h3>
     <c:forEach var="type" items="<%=SectionType.values()%>">
-        <c:if test="${resume.getSection(type) !=null}">
+        <c:if test='${resume.getSection(type) != null }'>
             <h3>${type.title}</h3>
             <c:choose>
                 <c:when test="${ type.toString() == \"PERSONAL\" || type.toString() == \"OBJECTIVE\" }">${resume.getSection(type)}</c:when>
                 <c:when test="${ type.toString() == \"ACHIEVEMENT\" ||  type.toString() == \"QUALIFICATIONS\"}"><c:forEach
-                        var="item"
-                        items="${resume.getSection(type).getItems()}">
-                    <p>${item}</p></c:forEach></c:when>
+                        var="item" items="${resume.getSection(type).getItems()}"><p>${item}</p></c:forEach></c:when>
+                <c:when test="${type.toString() == \"EDUCATION\" || type.toString() == \"EXPERIENCE\"}">
+                    <c:choose>
+                        <c:when test="${ type.toString() == \"EDUCATION\" }">
+                            <c:set var="listOrganisations"
+                                   value="<%=((OrganizationSection) resume.getSection(SectionType.EDUCATION)).getOrganizations()%>"/>
+                        </c:when>
+                        <c:when test="${ type.toString() == \"EXPERIENCE\" }">
+                            <c:set var="listOrganisations"
+                                   value="<%=((OrganizationSection) resume.getSection(SectionType.EXPERIENCE)).getOrganizations()%>"/>
+                        </c:when>
+                    </c:choose>
+                    <c:forEach var="organisation" items="${listOrganisations}">
+                        <jsp:useBean id="organisation" type="com.urise.webapp.model.Organization"/>
+                        <div>
+                            <p> Organisation : ${organisation.homePage.name}</p>
+                            <p> Site : ${organisation.homePage.url}</p>
+                        </div>
+                        <c:forEach var="post" items="${organisation.posts}">
+                            <div>
+                                <p> Start : ${post.startDate} End : ${post.endDate} </p>
+                                <p> Position : ${post.title}</p>
+                                <p> Description : ${post.description}</p>
+                            </div>
+                        </c:forEach>
+                    </c:forEach>
+                </c:when>
             </c:choose>
         </c:if>
     </c:forEach>

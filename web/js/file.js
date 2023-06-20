@@ -49,7 +49,7 @@ function handleClickOrganisations(event) {
     let div = document.createElement('div');
     div.id = ('o-' + nameSection + organisation);
     const organisationName = '<p> Organisation : <input type="text" name= title' + nameSection + organisation + ' size=30></p>';
-    const siteName = '<p> Site : <input type="text" name= site' + nameSection + organisation + ' size=30></p>';
+    const siteName = '<p> Site : <input type="text" name= site' + nameSection + organisation + ' size=30>  </p>'
     div.innerHTML = organisationName + siteName;
     const node = document.querySelector('#b-o-r-' + nameSection + (organisation - 1));
     node.after(div);
@@ -58,7 +58,7 @@ function handleClickOrganisations(event) {
     divButton.id = ('b-p-' + nameSection + organisation);
     divButton.innerHTML = '<button type="button" id=' + 'b-p-i-' + nameSection + organisation +
         ' data-organisation=' + organisation + ' class="periods" data-period=' + 0 + ' data-name=' + nameSection + '>Добавить период</button>' +
-        ' <input type="hidden" id="counterPeriods' + nameSection + organisation + '" name="counterPeriods' + nameSection + organisation + '" value =' + period + ' > ';
+        ' <input type="hidden" id="counterPeriods' + nameSection + organisation + '" name="counterPeriods' + nameSection + organisation + '" value =' + period + ' > '
     const nodeButton = document.querySelector('#p-' + nameSection + organisation + period)
     nodeButton.after(divButton)
     let divRemoveOrganisation = document.createElement('div');
@@ -85,7 +85,10 @@ function periodFunction(nameSection, str) {
     let div = document.createElement('div');
     div.id = 'p-' + nameSection + organisation + period;
     const start = '<p> Start : <input type="date" name= startDate' + nameSection + organisation + period + '>';
-    const end = ' End : <input type="date" name= endDate' + nameSection + organisation + period + '></p>';
+    const end = ' End : <input class="endDate" type="date" name= endDate' + nameSection + organisation + period + ' data-nameOrganisation=' + organisation + ' data-period=' + period +
+        ' data-name=' + nameSection + ' id=endDate' + nameSection + organisation + period + '> '
+    const checkbox = 'настоящее время<input type="checkbox" class="checkboxNow" data-organisation=' + organisation + ' data-period=' + period +
+        ' data-name=' + nameSection + ' id=checkbox' + nameSection + organisation + period + '></p>'
     const position = '<p> Position :  <input type="text" name= titlePeriod' + nameSection + organisation + period + '></p>';
     const description = '<textarea name=description' + nameSection + organisation + period + ' cols="200"></textarea>';
     let button = '<button type="button" class="removePeriod" id=p-b-r-' + nameSection + organisation + (period - 1) +
@@ -93,13 +96,15 @@ function periodFunction(nameSection, str) {
     if (period === 0) {
         button = ''
     }
-    div.innerHTML = start + end + position + description + button;
+    div.innerHTML = start + end + checkbox + position + description + button;
     const node = document.querySelector(str);
     node.after(div);
     if (button !== '') {
         const buttonRemove = document.querySelector('#p-b-r-' + nameSection + organisation + (period - 1))
         buttonRemove.addEventListener('click', removePeriod)
     }
+    const ch = document.querySelector('#checkbox' + nameSection + organisation + period)
+    ch.addEventListener('click', isCheckboxUntilNow)
 }
 
 function removePeriod(event) {
@@ -184,6 +189,44 @@ for (const x of textarea) {
 function autoResize() {
     this.style.height = 'auto';
     this.style.height = this.scrollHeight + 'px';
+}
+
+function isCheckboxUntilNow(event) {
+    const nameOrganisation = event.target.dataset.name
+    organisation = event.target.dataset.organisation
+    period = event.target.dataset.period
+    const checkboxId = document.querySelector('#checkbox' + nameOrganisation + organisation + period)
+    const endDateId = document.querySelector('#endDate' + nameOrganisation + organisation + period)
+    console.log(nameOrganisation + organisation + period)
+
+    if (checkboxId.checked) {
+        endDateId.hidden = true
+        endDateId.setAttribute('value', "3000-01-01")
+    } else {
+        const date = new Date()
+        const str = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2)
+        endDateId.setAttribute('value', str)
+        endDateId.hidden = false
+    }
+}
+
+function endDateFunction(name, organisation, period) {
+    const endDateId = document.querySelector('#endDate' + name + organisation + period)
+    endDateId.hidden = true
+    const checkboxId = document.querySelector('#checkbox' + name + organisation + period)
+    checkboxId.checked = true
+}
+
+const endDate = document.querySelectorAll('.endDate')
+for (const x of endDate) {
+    if (x.getAttribute('value') === "3000-01-01") {
+        endDateFunction(x.getAttribute('data-nameOrganisation'), x.getAttribute('data-organisation'), x.getAttribute('data-period'))
+    }
+}
+
+const checkboxUntilNow = document.querySelectorAll('.checkboxNow')
+for (const x of checkboxUntilNow) {
+    x.addEventListener('click', isCheckboxUntilNow)
 }
 
 const buttons = document.querySelectorAll('.periods');

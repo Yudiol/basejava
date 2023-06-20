@@ -43,14 +43,24 @@
                     <c:forEach var="organisation" items="${listOrganisations}">
                         <jsp:useBean id="organisation" type="com.urise.webapp.model.Organization"/>
                         <div>
-                            <p> Organisation : ${organisation.homePage.name}</p>
-                            <p> Site : ${organisation.homePage.url}</p>
+                            <c:choose>
+                                <c:when test="${organisation.homePage.url == ''}">
+                                    <p> Организация : ${organisation.homePage.name}</p>
+                                </c:when>
+                                <c:when test="${organisation.homePage.url != ''}">
+                                    <p> Организация : <a
+                                            href="${organisation.homePage.url}"> ${organisation.homePage.name}</a>
+                                    </p>
+                                </c:when>
+                            </c:choose>
                         </div>
                         <c:forEach var="post" items="${organisation.posts}">
                             <div>
-                                <p> Start : ${post.startDate} End : ${post.endDate} </p>
-                                <p> Position : ${post.title}</p>
-                                <p> Description : ${post.description}</p>
+                                <p style="margin-left: 50px;"> С - ${post.startDate == "4000-01-01"?"":post.startDate}
+                                    по
+                                    - ${ post.startDate == "4000-01-01"?"":(post.endDate=="3000-01-01"?"настоящее время":post.endDate)} </p>
+                                <p style="margin-left: 50px;"> Позиция : ${post.title}</p>
+                                <p style="margin-left: 50px;"> Описание : ${post.description}</p>
                             </div>
                         </c:forEach>
                     </c:forEach>

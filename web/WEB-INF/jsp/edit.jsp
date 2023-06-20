@@ -2,6 +2,7 @@
 <%@ page import="com.urise.webapp.model.*" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
+<%@ page import="java.time.LocalDate" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
@@ -90,18 +91,26 @@
                         <c:forEach items="${organisation.posts}" var="periods" varStatus="period">
                             <jsp:useBean id="periods" type="com.urise.webapp.model.Period"/>
                         <div id="p-${type}<%=count%><%=counterPeriods%>">
-                            <p> Start : <input id="start" type="date"
-                                               value="${periods.startDate}"
-                                               required name="startDate${type.name()}${status.index}${period.index}">
-                                End : <input type="date" value="${periods.endDate}"
-                                             required name="endDate${type.name()}${status.index}${period.index}"></p>
-                            <p> Position : <input size=70 required type="text" value="${periods.title}"
+                            <p> С <input id="start" type="date"
+                                         value="${periods.startDate=="4000-01-01"?"":periods.startDate}"
+                                         name="startDate${type.name()}${status.index}${period.index}">
+                                - по <input class="endDate" type="date"
+                                            value="${periods.endDate=="4000-01-01"?"":periods.endDate}"
+                                            id="endDate${type.name()}${status.index}${period.index}"
+                                            data-organisation="${status.index}"
+                                            data-period="${period.index}"
+                                            data-nameOrganisation="${type}"
+                                            name="endDate${type.name()}${status.index}${period.index}">настоящее
+                                время<input type="checkbox" class="checkboxNow" data-organisation="<%=count%>"
+                                            data-period="<%=counterPeriods%>" data-name="${type.name()}"
+                                            id="checkbox${type.name()}${status.index}${period.index}"></p>
+                            <p> Position : <input size=70 type="text" value="${periods.title.trim()}"
                                                   name="titlePeriod${type.name()}${status.index}${period.index}">
                             </p>
-                            <div> Description : <textarea required class="resizable"
+                            <div> Description : <textarea class="resizable"
                                                           name="description${type.name()}${status.index}${period.index}"
                                                           id="description${type.name()}${status.index}${period.index}"
-                                                          cols="200">${periods.description}</textarea>
+                                                          cols="200">${periods.description.trim()}</textarea>
                             </div>
                             <c:choose>
                                 <c:when test="${period.index  != 0}">
@@ -143,8 +152,7 @@
                 </tr>
             </c:forEach>
         </table>
-
-        <script src="..\js\file.js"></script>
+        <script src="../../js/file.js"></script>
         <hr>
         <button type="submit">Сохранить</button>
         <button onclick="window.history.back()" type="button">Cancel</button>

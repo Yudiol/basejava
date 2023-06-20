@@ -79,12 +79,23 @@ public class ResumeServlet extends HttpServlet {
                             for (int k = 0; k < counterPeriods; k++) {
                                 String startDate = request.getParameter("startDate" + type.name() + i + k);
                                 String endDate = request.getParameter("endDate" + type.name() + i + k);
-                                System.out.println(startDate + " " + endDate);
-                                if (Objects.equals(startDate, "") || Objects.equals(endDate, "") || Objects.equals(startDate, null) || Objects.equals(endDate, null)) {
+                                if (Objects.equals(startDate, null) || Objects.equals(endDate, null)) {
                                     continue;
                                 }
+                                if (Objects.equals(startDate, "")) {
+                                    startDate = "4000-01-01";
+                                }
+                                if (Objects.equals(endDate, "")) {
+                                    endDate = "4000-01-01";
+                                }
                                 String titlePeriod = request.getParameter("titlePeriod" + type.name() + i + k);
+                                if (Objects.equals(titlePeriod, "")) {
+                                    titlePeriod = " ";
+                                }
                                 String description = request.getParameter("description" + type.name() + i + k);
+                                if (Objects.equals(description, "")) {
+                                    description = " ";
+                                }
                                 periods.add(new Period(convertStringToLocalDate(startDate),
                                         convertStringToLocalDate(endDate), titlePeriod, description));
                             }
